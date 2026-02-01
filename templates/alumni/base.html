@@ -101,6 +101,13 @@
                 <li class="menu-title">Directory</li>
 
                 <li>
+                    <a href="{{ url_for('alumni.alumni_list') }}"
+                       class="{% if request.endpoint == 'alumni.alumni_list' %}active{% endif %}">
+                        <i class="bi bi-people-fill"></i> Alumni
+                    </a>
+                </li>
+
+                <li>
                     <a href="{{ url_for('alumni.students_list') }}"
                        class="{% if request.endpoint == 'alumni.students_list' %}active{% endif %}">
                         <i class="bi bi-people"></i> Students

@@ -37,6 +37,34 @@
             text-decoration: underline;
         }
 
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #c41e3a;
+            border: 2px solid #c41e3a;
+            padding: 0.5rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background-color: #c41e3a;
+            color: white;
+            text-decoration: none;
+        }
+
+        .auth-form .w-100 {
+            position: relative;
+        }
+
+        .back-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1.5rem;
+        }
+
         @media (max-width: 768px) {
             .login-image {
                 display: none;
@@ -44,6 +72,11 @@
 
             .auth-card {
                 width: 95%;
+            }
+
+            .back-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -61,6 +94,11 @@
 
                 <div class="auth-form">
                 <div class="w-100">
+                    <div class="back-btn-container">
+                        <a href="{{ url_for('home') }}" class="back-btn">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </a>
+                    </div>
                     <h3 class="text-center mb-4">Login to Alumni Portal</h3>
 
                     <form id="loginForm" novalidate>

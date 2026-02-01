@@ -182,9 +182,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* STUDENT */
     gr_no.addEventListener("input", () => {
-        /^\d{10}$/.test(gr_no.value)
+        /^\d{12}$/.test(gr_no.value)
             ? setValid(gr_no)
-            : setInvalid(gr_no, "GR must be exactly 10 digits");
+            : setInvalid(gr_no, "GR must be exactly 12 digits");
     });
 
     department.addEventListener("change", () => {

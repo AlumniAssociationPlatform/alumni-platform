@@ -270,6 +270,61 @@ def post_login():
         return redirect(url_for("auth.login"))
 
 # =========================
+# SERVE PROFILE PHOTO
+# =========================
+@auth.route("/profile-photo/<int:user_id>")
+def get_profile_photo(user_id):
+    from flask import send_file
+    user = User.query.get(user_id)
+    
+    if not user or not user.profile_photo:
+        print(f"No user or no profile_photo for user_id {user_id}")
+        # Return a default/placeholder image
+        default_path = os.path.join(os.path.dirname(__file__), '..', 'static', 'images', 'default-avatar.png')
+        if os.path.exists(default_path):
+            return send_file(default_path, mimetype='image/png')
+        else:
+            return redirect(url_for('static', filename='images/default-avatar.png'))
+    
+    try:
+        # Profile photo is stored as 'uploads/filename.ext'
+        file_path = os.path.join(os.path.dirname(__file__), '..', 'static', user.profile_photo)
+        print(f"Looking for profile photo at: {file_path}")
+        print(f"Stored in DB: {user.profile_photo}")
+        
+        if not os.path.exists(file_path):
+            print(f"Profile photo not found at: {file_path}")
+            # Try to serve default avatar
+            default_path = os.path.join(os.path.dirname(__file__), '..', 'static', 'images', 'default-avatar.png')
+            if os.path.exists(default_path):
+                return send_file(default_path, mimetype='image/png')
+            else:
+                return redirect(url_for('static', filename='images/default-avatar.png'))
+        
+        # Determine MIME type based on file extension
+        file_ext = os.path.splitext(file_path)[1].lower()
+        mime_types = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.png': 'image/png',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp'
+        }
+        mime_type = mime_types.get(file_ext, 'image/jpeg')
+        
+        print(f"Serving profile photo from: {file_path} with mime type: {mime_type}")
+        return send_file(file_path, mimetype=mime_type)
+    except Exception as e:
+        print(f"Error serving profile photo: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        default_path = os.path.join(os.path.dirname(__file__), '..', 'static', 'images', 'default-avatar.png')
+        if os.path.exists(default_path):
+            return send_file(default_path, mimetype='image/png')
+        else:
+            return redirect(url_for('static', filename='images/default-avatar.png'))
+
+# =========================
 # LOGOUT
 # =========================
 @auth.route("/logout")

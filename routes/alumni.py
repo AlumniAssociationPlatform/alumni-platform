@@ -561,6 +561,35 @@ def faculty_list():
 
 
 # =========================
+# ALUMNI LIST
+# =========================
+@alumni.route("/alumni")
+@alumni_required
+def alumni_list():
+    """View list of all alumni in the portal"""
+    page = request.args.get("page", 1, type=int)
+    search = request.args.get("search", "", type=str).strip()
+    
+    query = Alumni.query.filter(Alumni.user_id != current_user.id)
+    
+    # Search functionality
+    if search:
+        from models.user import User
+        query = query.join(User).filter(
+            db.or_(
+                User.name.ilike(f"%{search}%"),
+                Alumni.alumni_id.ilike(f"%{search}%"),
+                Alumni.department.ilike(f"%{search}%"),
+                Alumni.current_company.ilike(f"%{search}%")
+            )
+        )
+    
+    alumni_list_data = query.paginate(page=page, per_page=20)
+    
+    return render_template("alumni/alumni_list.html", alumni=alumni_list_data, search=search)
+
+
+# =========================
 # EVENTS
 # =========================
 @alumni.route("/events")

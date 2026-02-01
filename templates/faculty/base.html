@@ -41,10 +41,10 @@
             <div class="d-flex align-items-center gap-3">
                 <div class="d-flex align-items-center gap-2">
                     {% if current_user.profile_photo %}
-                    <img src="{{ url_for('static', filename=current_user.profile_photo) }}" 
+                    <img src="{{ url_for('auth.get_profile_photo', user_id=current_user.id) }}"
                          alt="Profile Photo" class="rounded-circle" style="width: 35px; height: 35px; object-fit: cover;">
                     {% else %}
-                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" 
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center"
                          style="width: 35px; height: 35px; color: white; font-weight: bold;">
                         {{ current_user.name[0].upper() }}
                     </div>
@@ -106,6 +106,15 @@
                        class="{% if request.endpoint == 'faculty.students' %}active{% endif %} menu-item-with-badge">
                         <span class="menu-item-content">
                             <i class="bi bi-people"></i> Students
+                        </span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('faculty.faculties') }}"
+                       class="{% if request.endpoint == 'faculty.faculties' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-person-badge"></i> Faculties
                         </span>
                     </a>
                 </li>

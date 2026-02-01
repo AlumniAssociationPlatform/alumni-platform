@@ -69,6 +69,19 @@
             <label class="text-muted small fw-bold">Joined On</label>
             <p class="mb-0">{{ student.created_at.strftime('%B %d, %Y') if student.created_at else 'N/A' }}</p>
         </div>
+
+        <div class="detail-group mb-3">
+            <label class="text-muted small fw-bold">LinkedIn Profile</label>
+            <p class="mb-0">
+                {% if student.linkedin_profile %}
+                    <a href="{{ student.linkedin_profile }}" target="_blank" rel="noopener noreferrer">
+                        <i class="bi bi-linkedin"></i> View Profile
+                    </a>
+                {% else %}
+                    <span class="text-muted">Not provided</span>
+                {% endif %}
+            </p>
+        </div>
     </div>
 </div>
 

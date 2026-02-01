@@ -179,6 +179,59 @@ def alumni():
 
 
 # =========================
+# VIEW FACULTIES
+# =========================
+@faculty.route("/faculties")
+@faculty_required
+def faculties():
+    from models.faculty import Faculty
+    from models.user import User
+    
+    faculty_profile = Faculty.query.filter_by(user_id=current_user.id).first()
+    
+    if not faculty_profile:
+        flash("Faculty profile not found.", "error")
+        return redirect(url_for("faculty.dashboard"))
+    
+    # Get all faculties from all departments (excluding current user)
+    faculties_list = Faculty.query.join(User, Faculty.user_id == User.id).filter(
+        User.is_approved == True,
+        Faculty.user_id != current_user.id  # Exclude current user
+    ).all()
+    
+    return render_template(
+        "faculty/faculties.html",
+        faculties_list=faculties_list
+    )
+
+
+# =========================
+# VIEW FACULTY DETAILS
+# =========================
+@faculty.route("/faculty/<int:faculty_id>")
+@faculty_required
+def view_faculty(faculty_id):
+    from models.faculty import Faculty
+    from models.user import User
+    
+    faculty_detail = Faculty.query.filter_by(id=faculty_id).first()
+    
+    if not faculty_detail:
+        flash("Faculty not found.", "error")
+        return redirect(url_for("faculty.faculties"))
+    
+    # Verify faculty is approved
+    if not faculty_detail.user.is_approved:
+        flash("This faculty profile is not approved yet.", "error")
+        return redirect(url_for("faculty.faculties"))
+    
+    return render_template(
+        "faculty/faculty_detail.html",
+        faculty=faculty_detail
+    )
+
+
+# =========================
 # ANNOUNCEMENTS
 # =========================
 @faculty.route("/announcements")
