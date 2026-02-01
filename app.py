@@ -141,4 +141,7 @@ def login_page():
 
 if __name__ == "__main__":
     print("Starting Flask server...")
-    app.run(debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 8080))
+    )
