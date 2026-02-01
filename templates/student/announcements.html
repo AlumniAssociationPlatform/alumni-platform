@@ -1,0 +1,93 @@
+{% extends "student/base.html" %}
+
+{% block title %}Announcements | Student - Alumni Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-megaphone-fill"></i> Announcements</h1>
+    <p>Stay updated with the latest announcements from the institute</p>
+</div>
+
+    <div class="row">
+        {% if announcements.items %}
+            {% for announcement in announcements.items %}
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm h-100 border-0">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title text-dark">{{ announcement.title }}</h5>
+                            <small class="badge bg-primary">New</small>
+                        </div>
+                        
+                        <p class="text-muted small">
+                            <i class="bi bi-calendar-event"></i>
+                            {{ announcement.created_at.strftime('%d %b %Y, %H:%M') }}
+                        </p>
+                        
+                        <hr class="my-3">
+                        
+                        <p class="card-text">
+                            {{ announcement.description }}
+                        </p>
+                    </div>
+                    
+                    {% if announcement.creator %}
+                    <div class="card-footer bg-light border-top">
+                        <small class="text-muted">
+                            <i class="bi bi-person"></i> Posted by: {{ announcement.creator.name }}
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-md-12">
+                <div class="alert alert-info text-center" role="alert">
+                    <i class="bi bi-info-circle"></i> No announcements at the moment. Check back soon!
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if announcements.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if announcements.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('student.announcements', page=announcements.prev_num) }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for page_num in announcements.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num == announcements.page %}
+                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                    {% else %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('student.announcements', page=page_num) }}">{{ page_num }}</a></li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+
+            {% if announcements.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('student.announcements', page=announcements.next_num) }}">Next</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    }
+</style>
+{% endblock %}

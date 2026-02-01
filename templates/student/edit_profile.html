@@ -1,0 +1,395 @@
+{% extends "student/base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Title -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold text-primary mb-2">Edit My Profile</h2>
+            <p class="text-muted">Update your personal and academic information</p>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div style="display: none;" data-flash-messages='[
+        {% for category, message in messages %}
+        {"category": "{{ category }}", "message": "{{ message }}"}{{ "," if not loop.last else "" }}
+        {% endfor %}
+    ]'></div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="row">
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm edit-profile-card">
+                <div class="card-header bg-gradient">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-pencil-square"></i> Update Profile
+                    </h5>
+                </div>
+
+                <form method="POST" class="needs-validation" id="editProfileForm" novalidate>
+                    <div class="card-body">
+                        {% if student %}
+                        <!-- Profile Photo Section -->
+                        <div class="section-box">
+                            <h6 class="section-title">
+                                <i class="bi bi-image"></i> Profile Photo
+                            </h6>
+
+                            <div class="row g-3 align-items-center">
+                                <div class="col-md-3">
+                                    <div class="text-center">
+                                        {% if current_user.profile_photo %}
+                                        <img id="photoPreview" src="{{ url_for('static', filename=current_user.profile_photo) }}" 
+                                             alt="Profile Photo" class="rounded-circle img-fluid" 
+                                             style="width: 150px; height: 150px; object-fit: cover;">
+                                        {% else %}
+                                        <div id="photoPreview" class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto" 
+                                             style="width: 150px; height: 150px;">
+                                            <div class="text-center">
+                                                <i class="bi bi-person-fill" style="font-size: 3rem; color: #ccc;"></i>
+                                                <p class="text-muted small mt-2">No Photo</p>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="form-group">
+                                        <label for="profilePhotoInput" class="form-label">Upload New Photo</label>
+                                        <input type="file" class="form-control" id="profilePhotoInput" 
+                                               accept=".png,.jpg,.jpeg,.webp">
+                                        <small class="form-text text-muted d-block mt-2">
+                                            <i class="bi bi-info-circle"></i> Allowed formats: PNG, JPG, JPEG, WEBP (Max 1 MB)
+                                        </small>
+                                        <div class="mt-2">
+                                            <button type="button" class="btn btn-primary btn-sm" id="uploadPhotoBtn" disabled>
+                                                <i class="bi bi-cloud-upload"></i> Upload Photo
+                                            </button>
+                                            <div id="photoUploadFeedback" class="mt-2"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Personal Information Section -->
+                        <div class="section-box">
+                            <h6 class="section-title">
+                                <i class="bi bi-person"></i> Personal Information
+                            </h6>
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="name" class="form-label required">Full Name</label>
+                                        <input type="text" class="form-control" id="name" name="name"
+                                            value="{{ current_user.name }}" required placeholder="Enter your full name">
+                                        <div class="invalid-feedback">
+                                            Please provide your full name.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" value="{{ current_user.email }}" disabled>
+                                        <small class="text-muted d-block mt-2">
+                                            <i class="bi bi-lock"></i> Email cannot be changed
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Contact Information Section -->
+                        <div class="section-box">
+                            <h6 class="section-title">
+                                <i class="bi bi-telephone"></i> Contact Information
+                            </h6>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="phone_number" class="form-label">Phone Number</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-telephone"></i>
+                                            </span>
+                                            <input type="text" class="form-control" id="phone_number"
+                                                name="phone_number" value="{{ student.phone_number or '' }}"
+                                                placeholder="e.g., 1234567890" maxlength="20">
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Provide your phone number to help other students and faculty contact you.
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="linkedin_profile" class="form-label">LinkedIn Profile URL</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-linkedin"></i>
+                                            </span>
+                                            <input type="url" class="form-control" id="linkedin_profile"
+                                                name="linkedin_profile" value="{{ student.linkedin_profile or '' }}"
+                                                placeholder="https://www.linkedin.com/in/yourprofile">
+                                        </div>
+                                        <small class="text-muted d-block mt-2">
+                                            Provide your LinkedIn URL to help other students and alumni network with you.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Academic Information Section -->
+                        <div class="section-box">
+                            <h6 class="section-title">
+                                <i class="bi bi-book"></i> Academic Information
+                            </h6>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="department" class="form-label required">Department</label>
+                                        <select id="department" name="department" class="form-select" required>
+                                            <option value="">Select Department</option>
+                                            <option value="Computer Engineering" {% if student.department == "Computer Engineering" %}selected{% endif %}>Computer Engineering</option>
+                                            <option value="IT Engineering" {% if student.department == "IT Engineering" %}selected{% endif %}>IT Engineering</option>
+                                            <option value="Mechanical Engineering" {% if student.department == "Mechanical Engineering" %}selected{% endif %}>Mechanical Engineering</option>
+                                            <option value="Civil Engineering" {% if student.department == "Civil Engineering" %}selected{% endif %}>Civil Engineering</option>
+                                            <option value="Electrical Engineering" {% if student.department == "Electrical Engineering" %}selected{% endif %}>Electrical Engineering</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select your department.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="batch_year" class="form-label required">Batch Year</label>
+                                        <select id="batch_year" name="batch_year" class="form-select" required>
+                                            <option value="">Select Batch Year</option>
+                                            <option value="First Year" {% if student.batch_year == "First Year" %}selected{% endif %}>First Year</option>
+                                            <option value="Second Year" {% if student.batch_year == "Second Year" %}selected{% endif %}>Second Year</option>
+                                            <option value="Third Year" {% if student.batch_year == "Third Year" %}selected{% endif %}>Third Year</option>
+                                        </select>
+                                        <div class="invalid-feedback">
+                                            Please select your batch year.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="skills" class="form-label">Skills (Optional)</label>
+                                        <textarea id="skills" name="skills" class="form-control" rows="3"
+                                            placeholder="e.g., Python, Java, Web Development...">{{ student.skills or '' }}</textarea>
+                                        <small class="text-muted d-block mt-2">
+                                            List your technical and professional skills separated by commas.
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Form Actions -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-end">
+                            <a href="{{ url_for('student.profile') }}" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Save Changes
+                            </button>
+                        </div>
+
+                        {% else %}
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            No student profile found. Please contact the administrator.
+                        </div>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+
+            <!-- Information Box -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle"></i> Profile Information Tips
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-check-circle text-success"></i> Keep your contact information updated</li>
+                        <li><i class="bi bi-check-circle text-success"></i> LinkedIn profile helps with networking</li>
+                        <li><i class="bi bi-check-circle text-success"></i> Skills help other students understand your expertise</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-bulb"></i> Tips
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">
+                        <i class="bi bi-telephone"></i> <strong>Phone Number</strong>
+                        <br>Make sure your phone number is accurate so others can reach you easily.
+                    </p>
+                    <hr>
+                    <p class="text-muted small">
+                        <i class="bi bi-linkedin"></i> <strong>LinkedIn Connection</strong>
+                        <br>Adding your LinkedIn URL makes it easier for alumni and students to network with you.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Photo Upload Script -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+document.getElementById('profilePhotoInput').addEventListener('change', function() {
+    const uploadBtn = document.getElementById('uploadPhotoBtn');
+    const file = this.files[0];
+    
+    if (file) {
+        const validFormats = ['image/png', 'image/jpeg', 'image/webp'];
+        if (!validFormats.includes(file.type)) {
+            const feedback = document.getElementById('photoUploadFeedback');
+            feedback.innerHTML = '<div class="alert alert-danger small mb-0"><i class="bi bi-exclamation-circle"></i> Only PNG, JPG, JPEG, and WEBP formats allowed</div>';
+            uploadBtn.disabled = true;
+            return;
+        }
+        
+        if (file.size > 1 * 1024 * 1024) {
+            const feedback = document.getElementById('photoUploadFeedback');
+            feedback.innerHTML = '<div class="alert alert-danger small mb-0"><i class="bi bi-exclamation-circle"></i> File size must be less than 1 MB</div>';
+            uploadBtn.disabled = true;
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('photoPreview');
+            if (preview.tagName === 'IMG') {
+                preview.src = e.target.result;
+            } else {
+                const img = document.createElement('img');
+                img.id = 'photoPreview';
+                img.src = e.target.result;
+                img.className = 'rounded-circle img-fluid';
+                img.style = 'width: 150px; height: 150px; object-fit: cover;';
+                preview.parentElement.replaceChild(img, preview);
+            }
+        };
+        reader.readAsDataURL(file);
+        
+        document.getElementById('photoUploadFeedback').innerHTML = '';
+        uploadBtn.disabled = false;
+    } else {
+        uploadBtn.disabled = true;
+    }
+});
+
+document.getElementById('uploadPhotoBtn').addEventListener('click', function() {
+    const fileInput = document.getElementById('profilePhotoInput');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        toastr.error('Please select a file first');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('profile_photo', file);
+    
+    this.disabled = true;
+    const originalText = this.innerHTML;
+    this.innerHTML = '<i class="bi bi-hourglass-split"></i> Uploading...';
+    
+    fetch('{{ url_for("auth.update_profile_photo") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            toastr.success(data.message);
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            toastr.error(data.message || 'Upload failed');
+            this.disabled = false;
+            this.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        toastr.error('An error occurred during upload');
+        this.disabled = false;
+        this.innerHTML = originalText;
+    });
+});
+
+// Form validation
+document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+    if (!this.checkValidity()) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    this.classList.add('was-validated');
+});
+</script>
+
+<!-- Flash Messages Handler -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const flashData = document.querySelector('[data-flash-messages]');
+    if (flashData) {
+        try {
+            const messages = JSON.parse(flashData.dataset.flashMessages);
+            messages.forEach(msg => {
+                if (msg.category === 'success') {
+                    toastr.success(msg.message);
+                } else if (msg.category === 'error') {
+                    toastr.error(msg.message);
+                } else {
+                    toastr.info(msg.message);
+                }
+            });
+        } catch (e) {
+            console.error('Error parsing flash messages:', e);
+        }
+    }
+});
+</script>
+
+{% endblock %}

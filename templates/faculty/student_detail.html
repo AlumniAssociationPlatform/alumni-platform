@@ -1,0 +1,90 @@
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="text-center">
+            {% if student.user.profile_photo %}
+                <img src="{{ url_for('static', filename=student.user.profile_photo) }}" 
+                     alt="{{ student.user.name }}" 
+                     class="img-fluid rounded-circle" 
+                     style="width: 150px; height: 150px; object-fit: cover;">
+            {% else %}
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle" 
+                     style="width: 150px; height: 150px; background-color: #e9ecef;">
+                    <i class="bi bi-person" style="font-size: 3rem; color: #6c757d;"></i>
+                </div>
+            {% endif %}
+            <h5 class="mt-3 mb-1">{{ student.user.name }}</h5>
+            <p class="text-muted small">{{ student.student_id }}</p>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="detail-group mb-3">
+            <label class="text-muted small fw-bold">Student ID</label>
+            <p class="mb-0">{{ student.student_id }}</p>
+        </div>
+        
+        <div class="detail-group mb-3">
+            <label class="text-muted small fw-bold">Full Name</label>
+            <p class="mb-0">{{ student.user.name }}</p>
+        </div>
+        
+        <div class="detail-group mb-3">
+            <label class="text-muted small fw-bold">Email</label>
+            <p class="mb-0">
+                <a href="mailto:{{ student.user.email }}">{{ student.user.email }}</a>
+            </p>
+        </div>
+        
+        <div class="detail-group mb-3">
+            <label class="text-muted small fw-bold">Batch Year</label>
+            <p class="mb-0">{{ student.batch_year }}</p>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="detail-group mb-3">
+            <label class="text-muted small fw-bold">Department</label>
+            <p class="mb-0">{{ student.department }}</p>
+        </div>
+        
+        <div class="detail-group mb-3">
+            <label class="text-muted small fw-bold">Account Status</label>
+            <p class="mb-0">
+                {% if student.user.is_approved %}
+                    <span class="badge bg-success">Approved</span>
+                {% else %}
+                    <span class="badge bg-warning">Pending Approval</span>
+                {% endif %}
+                {% if student.user.is_blocked %}
+                    <span class="badge bg-danger">Blocked</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="detail-group mb-3">
+            <label class="text-muted small fw-bold">Joined On</label>
+            <p class="mb-0">{{ student.created_at.strftime('%B %d, %Y') if student.created_at else 'N/A' }}</p>
+        </div>
+    </div>
+</div>
+
+<hr>
+
+<div class="row">
+    <div class="col-12">
+        <div class="detail-group">
+            <label class="text-muted small fw-bold">Skills</label>
+            <p class="mb-0">
+                {% if student.skills %}
+                    {{ student.skills }}
+                {% else %}
+                    <span class="text-muted">Not provided</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>

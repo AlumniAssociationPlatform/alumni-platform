@@ -1,0 +1,226 @@
+{% extends "student/base.html" %}
+
+{% block title %}Events | Student - Alumni Portal{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="student-page-header">
+    <h1><i class="bi bi-calendar-event"></i> Upcoming Events</h1>
+    <p>Discover and participate in exciting alumni and campus events</p>
+</div>
+
+<div class="container-fluid px-4">
+    <!-- Search Section -->
+    <div class="mb-5">
+        <form method="GET" class="search-form">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-8">
+                    <label class="form-label fw-600 text-dark">Search Events</label>
+                    <input type="text" name="search" class="form-control form-control-lg" 
+                           placeholder="Search by event name, department, or keywords..."
+                           value="{{ search or '' }}" style="border-radius: 10px;">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary btn-lg w-100" style="border-radius: 10px;">
+                        <i class="bi bi-search"></i> Search Events
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    {% if events.items %}
+        <!-- Events Grid -->
+        <div class="row g-4">
+            {% for event in events.items %}
+            <div class="col-lg-4 col-md-6">
+                <div class="event-card card border-0 h-100 shadow-sm" style="border-radius: 15px; overflow: hidden; transition: all 0.3s ease;">
+                    <!-- Event Image -->
+                    <div class="event-image-wrapper position-relative" style="height: 220px; overflow: hidden; background: linear-gradient(135deg, #f8fafc, #ecf0f1);">
+                        {% if event.banner_image %}
+                            <img src="{{ url_for('static', filename='uploads/events/' + event.banner_image) }}" 
+                                 class="card-img-top w-100 h-100" alt="{{ event.title }}" 
+                                 style="object-fit: cover; object-position: center;">
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center w-100 h-100">
+                                <div class="text-center">
+                                    <i class="bi bi-image" style="font-size: 4rem; color: #c41e3a; opacity: 0.2;"></i>
+                                    <p class="text-muted mt-2">No image</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Date Badge (Overlay) -->
+                        {% if event.event_date %}
+                        <div class="position-absolute top-0 start-0 m-3">
+                            <span class="badge badge-event" style="background: linear-gradient(135deg, #c41e3a, #8b0000); padding: 0.6rem 1rem; font-size: 0.9rem; border-radius: 8px;">
+                                <i class="bi bi-calendar3"></i> {{ event.event_date.strftime('%d %b %Y') }}
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Card Body -->
+                    <div class="card-body d-flex flex-column" style="padding: 1.8rem;">
+                        <!-- Title -->
+                        <h5 class="card-title fw-700 mb-2" style="font-size: 1.2rem; color: #1a202c; line-height: 1.4;">
+                            {{ event.title }}
+                        </h5>
+                        
+                        <!-- Department Badges (One per line) -->
+                        {% if event.department %}
+                        <div class="mb-3 d-flex flex-wrap gap-2">
+                            {% for dept in event.department.split(',') %}
+                            <span class="badge" style="background: #f0f5ff; color: #0d6efd; padding: 0.5rem 0.75rem; font-size: 0.75rem; border-radius: 6px; font-weight: 500; display: inline-block;">
+                                <i class="bi bi-building"></i> {{ dept.strip() }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Description -->
+                        <p class="card-text text-muted" style="font-size: 0.95rem; line-height: 1.6; flex-grow: 1; margin-bottom: 1.5rem;">
+                            {% if event.description %}
+                                {{ event.description[:120] }}{% if event.description|length > 120 %}...{% endif %}
+                            {% else %}
+                                <span class="text-secondary-emphasis fst-italic">No description available</span>
+                            {% endif %}
+                        </p>
+                        
+                        <!-- Registration Status & Button -->
+                        {% if event.id in registered_event_ids %}
+                            <div class="alert alert-success py-2 mb-2 d-flex align-items-center" style="border-radius: 8px; border: none; background: #d1e7dd; color: #0f5132;">
+                                <i class="bi bi-check-circle-fill me-2"></i>
+                                <span class="small fw-600">You're registered for this event</span>
+                            </div>
+                            <button type="button" class="btn btn-outline-danger w-100" style="border-radius: 10px; padding: 0.7rem; font-weight: 600;" 
+                                    onclick="unregisterEvent({{ event.id }})">
+                                <i class="bi bi-x-circle"></i> Unregister
+                            </button>
+                        {% else %}
+                            <button type="button" class="btn btn-primary w-100" style="background: linear-gradient(135deg, #c41e3a, #8b0000); border: none; border-radius: 10px; padding: 0.8rem; font-weight: 600; transition: all 0.3s ease;" 
+                                    onclick="registerEvent({{ event.id }})" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 16px rgba(196, 30, 58, 0.3)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+                                <i class="bi bi-plus-circle"></i> Register Now
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if events.pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-5 d-flex justify-content-center">
+            <ul class="pagination" style="gap: 0.5rem;">
+                {% if events.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('student.events', page=events.prev_num, search=search) }}" style="border-radius: 8px;">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in events.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num == events.page %}
+                        <li class="page-item active">
+                            <span class="page-link" style="background: linear-gradient(135deg, #c41e3a, #8b0000); border: none; border-radius: 8px;">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('student.events', page=page_num, search=search) }}" style="border-radius: 8px; border: 2px solid #e9ecef;">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link" style="border-radius: 8px;">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if events.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('student.events', page=events.next_num, search=search) }}" style="border-radius: 8px;">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="container py-5 text-center">
+            <div style="max-width: 500px; margin: 0 auto;">
+                <div class="mb-4">
+                    <i class="bi bi-calendar-x" style="font-size: 5rem; color: #cbd5e0; opacity: 0.6;"></i>
+                </div>
+                <h4 class="fw-700 mb-2" style="color: #2d3748;">No Events Found</h4>
+                <p class="text-muted mb-4">
+                    {% if search %}
+                        No events match your search "<strong>{{ search }}</strong>". Try searching with different keywords.
+                    {% else %}
+                        There are no events scheduled right now. Check back soon!
+                    {% endif %}
+                </p>
+                <a href="{{ url_for('student.events') }}" class="btn btn-primary" style="background: linear-gradient(135deg, #c41e3a, #8b0000); border: none; border-radius: 10px; padding: 0.8rem 1.5rem; font-weight: 600;">
+                    <i class="bi bi-arrow-counterclockwise"></i> View All Events
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function registerEvent(eventId) {
+    fetch(`/student/events/${eventId}/register`, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toastr.success(data.message);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            toastr.error(data.message);
+        }
+    })
+    .catch(error => {
+        toastr.error('Error registering for event');
+    });
+}
+
+function unregisterEvent(eventId) {
+    if (confirm('Are you sure you want to unregister from this event?')) {
+        fetch(`/student/events/${eventId}/unregister`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                toastr.success(data.message);
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                toastr.error(data.message);
+            }
+        })
+        .catch(error => {
+            toastr.error('Error unregistering from event');
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% block content %}
+
+<div class="card shadow">
+    <div class="card-header">
+        <h5>{{ "Update Announcement" if announcement else "Create Announcement" }}</h5>
+    </div>
+
+    <div class="card-body">
+        <form method="POST" id="announcementForm" novalidate>
+
+            <div class="mb-3">
+                <label class="form-label required">Announcement Title</label>
+                <input type="text" class="form-control" id="title" name="title" maxlength="150" required
+                    value="{{ announcement.title if announcement else '' }}">
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" maxlength="1000"
+                    rows="6">{{ announcement.description if announcement else '' }}</textarea>
+                <small class="form-text text-muted"><span id="charCount">0</span>/1000 characters</small>
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="text-end">
+                <a href="{{ url_for('admin.announcements') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                    {{ "Update" if announcement else "Create" }}
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/announcement_validation.js') }}"></script>
+{% endblock %}

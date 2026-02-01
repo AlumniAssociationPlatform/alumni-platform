@@ -1,0 +1,51 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h2 class="text-primary">User Details</h2>
+
+<div class="card shadow-sm p-4">
+    <!-- Profile Photo Section -->
+    <div class="text-center mb-4">
+        {% if user.profile_photo %}
+        <img src="{{ url_for('static', filename=user.profile_photo) }}" alt="Profile Photo"
+            class="rounded-circle img-fluid" style="width: 150px; height: 150px; object-fit: cover;">
+        {% else %}
+        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto"
+            style="width: 150px; height: 150px;">
+            <i class="bi bi-person-fill" style="font-size: 4rem; color: #ccc;"></i>
+        </div>
+        {% endif %}
+    </div>
+
+    <p><strong>ID:</strong> {{ user.id }}</p>
+    <p><strong>Name:</strong> {{ user.name }}</p>
+    <p><strong>Email:</strong> {{ user.email }}</p>
+    <p><strong>Phone Number:</strong> {{ user.student_profile.phone_number if user.student_profile and user.student_profile.phone_number else (user.faculty_profile.phone_number if user.faculty_profile and user.faculty_profile.phone_number else (user.alumni_profile.phone_number if user.alumni_profile and user.alumni_profile.phone_number else 'Not provided')) }}</p>
+    <p><strong>Role:</strong> {{ user.role.value }}</p>
+    {% if student_profile %}
+    <p><strong>Department:</strong> {{ student_profile.department }}</p>
+    <p><strong>GR No:</strong> {{ student_profile.student_id }}</p>
+    <p><strong>LinkedIn Profile:</strong> {% if student_profile.linkedin_profile %}<a href="{{ student_profile.linkedin_profile }}" target="_blank">View Profile</a>{% else %}Not provided{% endif %}</p>
+    {% endif %}
+    {% if faculty_profile %}
+    <p><strong>Department:</strong> {{ faculty_profile.department.display_name }}</p>
+    <p><strong>Designation:</strong> {{ faculty_profile.designation }}</p>
+    <p><strong>LinkedIn Profile:</strong> {% if faculty_profile.linkedin_profile %}<a href="{{ faculty_profile.linkedin_profile }}" target="_blank">View Profile</a>{% else %}Not provided{% endif %}</p>
+    {% endif %}
+
+    {% if alumni_profile %}
+    <p><strong>Department:</strong> {{ alumni_profile.department }}</p>
+    <p><strong>Batch Year:</strong> {{ alumni_profile.batch_year }}</p>
+    <p><strong>LinkedIn Profile:</strong> {% if alumni_profile.linkedin_profile %}<a href="{{ alumni_profile.linkedin_profile }}" target="_blank">View Profile</a>{% else %}Not provided{% endif %}</p>
+    {% endif %}
+    <p><strong>Approved:</strong> {{ "Yes" if user.is_approved else "No" }}</p>
+    <p><strong>Status:</strong>
+        {{ "Blocked" if user.is_blocked else "Active" }}
+    </p>
+    <p><strong>Registered At:</strong> {{ user.created_at | datetime }}</p>
+
+    <a href="{{ url_for('admin.approvals') }}" class="btn btn-secondary mt-3">
+        Back
+    </a>
+</div>
+{% endblock %}

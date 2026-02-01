@@ -1,0 +1,372 @@
+{% extends "student/base.html" %}
+
+{% block title %}{{ job.title }} - Jobs & Internships{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4 mb-5">
+    <!-- Header Section -->
+    <div class="row mb-5">
+        <div class="col-lg-8">
+            <a href="{{ url_for('student.jobs') }}" class="btn btn-sm btn-outline-secondary mb-3">
+                <i class="fas fa-chevron-left"></i> Back to Jobs
+            </a>
+            <h1 class="mb-2" style="font-weight: 700; font-size: 2.5rem;">{{ job.title }}</h1>
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <i class="fas fa-building text-muted" style="font-size: 1.2rem;"></i>
+                <h4 class="mb-0 text-muted">{{ job.company }}</h4>
+            </div>
+            
+            <!-- Quick Stats -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-md-3">
+                    <div class="d-flex align-items-center">
+                        <span class="badge {% if job.job_type == 'Job' %}bg-success{% elif job.job_type == 'Internship' %}bg-warning{% else %}bg-primary{% endif %} p-2" style="font-size: 0.9rem;">
+                            {{ job.job_type }}
+                        </span>
+                    </div>
+                </div>
+                {% if job.location %}
+                <div class="col-sm-6 col-md-3">
+                    <small class="text-muted d-block">LOCATION</small>
+                    <p class="mb-0"><i class="fas fa-map-marker-alt text-danger"></i> {{ job.location }}</p>
+                </div>
+                {% endif %}
+                {% if job.salary_range %}
+                <div class="col-sm-6 col-md-3">
+                    <small class="text-muted d-block">SALARY</small>
+                    <p class="mb-0"><strong>{{ job.salary_range }}</strong></p>
+                </div>
+                {% endif %}
+                <div class="col-sm-6 col-md-3">
+                    <small class="text-muted d-block">POSTED</small>
+                    <p class="mb-0">{{ job.created_at|datetime('%d %b %Y') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Status (Right Column) -->
+        <div class="col-lg-4">
+            {% if application %}
+            <div class="card border-0 shadow-sm bg-success-light" style="border-left: 4px solid #28a745;">
+                <div class="card-body">
+                    <div class="text-center">
+                        <div class="mb-3">
+                            <i class="fas fa-check-circle text-success" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <h5 class="card-title mb-2">Application Submitted!</h5>
+                        <p class="text-muted small mb-2">
+                            {{ application.applied_at|datetime('%d %b %Y, %I:%M %p') }}
+                        </p>
+                        <div class="badge bg-info">{{ application.status|title }}</div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-paper-plane text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <h5 class="card-title mb-3">Apply for this Position</h5>
+                    
+                    {% if job.application_deadline and job.application_deadline < now.date() %}
+                    <div class="alert alert-danger mb-0">
+                        <i class="fas fa-clock"></i>
+                        <strong>Application Closed</strong>
+                        <p class="small mb-0 mt-2">Deadline: {{ job.application_deadline|datetime('%d %b %Y') }}</p>
+                    </div>
+                    {% else %}
+                    <p class="text-muted small mb-3">
+                        Ready to apply? Click the button below to submit your application.
+                    </p>
+                    {% if job.application_deadline %}
+                    <div class="alert alert-light mb-3 border">
+                        <i class="fas fa-calendar text-warning"></i>
+                        <small>Deadline: <strong>{{ job.application_deadline|datetime('%d %b %Y') }}</strong></small>
+                    </div>
+                    {% endif %}
+                    <button type="button" class="btn btn-primary w-100 btn-lg" data-bs-toggle="modal" data-bs-target="#applyModal">
+                        <i class="fas fa-paper-plane"></i> Apply Now
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Job Flyer/Poster -->
+            {% if job.banner_image %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body p-0">
+                    <img src="{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}" 
+                         alt="Job Flyer - {{ job.title }}" 
+                         class="img-fluid rounded-top"
+                         style="max-height: 400px; object-fit: cover; width: 100%;">
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Job Summary Card - Horizontal Layout -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-danger text-white border-0">
+                    <h6 class="mb-0"><i class="fas fa-list"></i> Job Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-3">
+                            <small class="text-muted d-block mb-2">JOB TYPE</small>
+                            <span class="badge {% if job.job_type == 'Job' %}bg-success{% elif job.job_type == 'Internship' %}bg-warning{% else %}bg-primary{% endif %} p-2">
+                                {{ job.job_type }}
+                            </span>
+                        </div>
+                        {% if job.location %}
+                        <div class="col-md-3">
+                            <small class="text-muted d-block mb-2">LOCATION</small>
+                            <p class="mb-0"><strong><i class="fas fa-map-marker-alt text-danger"></i> {{ job.location }}</strong></p>
+                        </div>
+                        {% endif %}
+                        {% if job.salary_range %}
+                        <div class="col-md-3">
+                            <small class="text-muted d-block mb-2">SALARY</small>
+                            <p class="mb-0"><strong>{{ job.salary_range }}</strong></p>
+                        </div>
+                        {% endif %}
+                        <div class="col-md-3">
+                            <small class="text-muted d-block mb-2">POSTED ON</small>
+                            <p class="mb-0"><strong>{{ job.created_at|datetime('%d %b %Y') }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About the Job Card: show only when a real description exists -->
+            {% set desc = job.description.strip() if job.description else '' %}
+            {% set _placeholders = ['[Pending Review - Banner image uploaded]', '[Pending Review - Banner Upload]'] %}
+            {% if desc and desc not in _placeholders %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0"><i class="fas fa-briefcase text-primary"></i> About the Job</h5>
+                </div>
+                <div class="card-body">
+                    <p style="line-height: 1.8; font-size: 1.05rem;">{{ job.description }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Eligibility & Department Cards -->
+            <div class="row">
+                {% if job.eligibility %}
+                <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="mb-0"><i class="fas fa-check-circle text-success"></i> Eligibility</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted" style="line-height: 1.6;">{{ job.eligibility }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if job.department %}
+                <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-white border-bottom">
+                            <h6 class="mb-0"><i class="fas fa-sitemap text-info"></i> Department</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0"><strong>{{ job.department }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Contact Information Card -->
+            {% if job.contact_email or job.contact_phone or job.apply_link %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0"><i class="fas fa-envelope text-success"></i> Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% if job.contact_email %}
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted d-block mb-1">EMAIL</small>
+                            <a href="mailto:{{ job.contact_email }}" class="text-decoration-none">
+                                <i class="fas fa-envelope"></i> {{ job.contact_email }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% if job.contact_phone %}
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted d-block mb-1">PHONE</small>
+                            <a href="tel:{{ job.contact_phone }}" class="text-decoration-none">
+                                <i class="fas fa-phone"></i> {{ job.contact_phone }}
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% if job.apply_link %}
+                        <div class="col-12">
+                            <small class="text-muted d-block mb-1">EXTERNAL LINK</small>
+                            <a href="{{ job.apply_link }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                                <i class="fas fa-external-link-alt"></i> Apply via External Link
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Posted By Card -->
+            {% if job.poster %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0"><i class="fas fa-user-tie text-primary"></i> Posted By</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% if job.poster.profile_photo %}
+                    <img src="{{ url_for('static', filename=job.poster.profile_photo) }}" alt="{{ job.poster.name }}" class="rounded-circle mb-3" style="width: 80px; height: 80px; object-fit: cover; border: 3px solid #f0f0f0;">
+                    {% else %}
+                    <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: bold; font-size: 1.8rem; margin-left: auto; margin-right: auto;">
+                        {{ job.poster.name[0].upper() }}
+                    </div>
+                    {% endif %}
+                    <h6 class="mb-1" style="font-weight: 600;">{{ job.poster.name }}</h6>
+                    <p class="text-muted small mb-0"><i class="fas fa-graduation-cap"></i> Alumni Member</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Apply Modal -->
+<div class="modal fade" id="applyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header border-bottom bg-light">
+                <h5 class="modal-title"><i class="fas fa-check-circle text-success"></i> Confirm Your Application</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="applicationForm" data-job-id="{{ job.id }}">
+                <div class="modal-body">
+                    <div class="card bg-light border-0 mb-3">
+                        <div class="card-body">
+                            <p class="mb-0">
+                                <strong class="d-block mb-2">{{ job.title }}</strong>
+                                <i class="fas fa-building"></i> {{ job.company }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle"></i> <strong>Note:</strong> Your profile information will be shared with the employer.
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="confirmCheck" required>
+                        <label class="form-check-label" for="confirmCheck">
+                            I confirm that all information in my profile is accurate and I meet the job requirements
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer border-top bg-light">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i> Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-success-light {
+        background-color: #d4edda !important;
+    }
+
+    .card {
+        transition: all 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .card-header {
+        background-color: transparent;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        color: #1a1a1a;
+        font-weight: 600;
+    }
+</style>
+
+<!-- JavaScript for handling the form -->
+<script>
+    document.getElementById('applicationForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+
+        fetch("{{ url_for('student.apply_job', job_id=job.id) }}", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.success(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    if (typeof toastr !== 'undefined') {
+                        toastr.error(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (typeof toastr !== 'undefined') {
+                    toastr.error('An error occurred. Please try again.');
+                } else {
+                    alert('An error occurred. Please try again.');
+                }
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+    });
+</script>
+
+{% endblock %}

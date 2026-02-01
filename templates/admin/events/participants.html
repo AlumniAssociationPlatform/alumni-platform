@@ -1,0 +1,251 @@
+{% extends "admin/base.html" %}
+{% block content %}
+
+<div class="container-fluid">
+    <!-- Page Header with Back Button -->
+    <div class="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+            <a href="{{ url_for('admin.events') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to Events
+            </a>
+            <h2 class="text-primary mt-3 mb-1">
+                <i class="bi bi-calendar-event"></i> {{ event.title }}
+            </h2>
+            <p class="text-muted mb-0">
+                <i class="bi bi-calendar-check"></i> {{ event.event_date.strftime('%d %B %Y') if event.event_date else 'No date set' }}
+            </p>
+        </div>
+        <div class="text-end">
+            <div class="card bg-light border-0 p-3">
+                <div class="text-center">
+                    <h3 class="text-primary mb-1">{{ total_participants }}</h3>
+                    <p class="text-muted mb-0 small">Students Registered</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Event Details Section -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="card-title mb-0">Event Information</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Event Date -->
+                    <div class="mb-3">
+                        <strong><i class="bi bi-calendar3"></i> Event Date:</strong>
+                        <p class="mb-0">{{ event.event_date.strftime('%d %B %Y') if event.event_date else 'Not specified' }}</p>
+                    </div>
+
+                    <!-- Departments -->
+                    {% if event.department %}
+                    <div class="mb-3">
+                        <strong><i class="bi bi-building"></i> Departments:</strong>
+                        <div class="mt-2">
+                            {% for dept in event.department.split(',') %}
+                            <span class="badge bg-info me-2 mb-2">{{ dept.strip() }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Description -->
+                    {% if event.description %}
+                    <div class="mb-3">
+                        <strong><i class="bi bi-file-earmark-text"></i> Description:</strong>
+                        <p class="text-muted mb-0">{{ event.description }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- PDF File Link -->
+                    {% if event.pdf_file %}
+                    <div class="mb-0">
+                        <strong><i class="bi bi-file-pdf"></i> Attachments:</strong>
+                        <div class="mt-2">
+                            <a href="{{ url_for('static', filename='uploads/events/' + event.pdf_file) }}" 
+                               class="btn btn-sm btn-outline-info" target="_blank">
+                                <i class="bi bi-download"></i> Download Event PDF
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Banner Image -->
+        <div class="col-lg-4">
+            {% if event.banner_image %}
+            <div class="card shadow-sm border-0 overflow-hidden">
+                <img src="{{ url_for('static', filename='uploads/events/' + event.banner_image) }}" 
+                     alt="{{ event.title }}" class="card-img-top" style="height: 300px; object-fit: cover;">
+                <div class="card-body text-center bg-light">
+                    <small class="text-muted">Event Banner</small>
+                </div>
+            </div>
+            {% else %}
+            <div class="card shadow-sm border-0 bg-light d-flex align-items-center justify-content-center" style="height: 320px;">
+                <div class="text-center">
+                    <i class="bi bi-image" style="font-size: 3rem; color: #c41e3a; opacity: 0.2;"></i>
+                    <p class="text-muted mt-2">No banner image</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Registered Students Section -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-light border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">
+                <i class="bi bi-people-fill"></i> Registered Students
+            </h5>
+            <span class="badge bg-primary rounded-pill">{{ total_participants }} Students</span>
+        </div>
+
+        <div class="card-body p-0">
+            {% if participant_details %}
+            <!-- Responsive Table -->
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="text-center" style="width: 60px;">#</th>
+                            <th><i class="bi bi-person-circle"></i> Name</th>
+                            <th><i class="bi bi-envelope"></i> Email</th>
+                            <th><i class="bi bi-building"></i> Department</th>
+                            <th><i class="bi bi-calendar-plus"></i> Batch Year</th>
+                            <th><i class="bi bi-clock"></i> Registered On</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in participant_details %}
+                        <tr>
+                            <td class="text-center text-muted small">{{ loop.index }}</td>
+                            <td>
+                                <strong class="d-block">{{ item.user.name }}</strong>
+                                <small class="text-muted">ID: {{ item.user.id }}</small>
+                            </td>
+                            <td>
+                                <a href="mailto:{{ item.user.email }}" class="text-decoration-none">
+                                    {{ item.user.email }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if item.student and item.student.department %}
+                                    <span class="badge bg-info">{{ item.student.department }}</span>
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.student and item.student.batch_year %}
+                                    {{ item.student.batch_year }}
+                                {% else %}
+                                    <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    {{ item.registered_at.strftime('%d %b %Y, %H:%M') if item.registered_at else 'N/A' }}
+                                </small>
+                            </td>
+                            <td class="text-center">
+                                <a href="{{ url_for('admin.view_user', user_id=item.user.id) }}" 
+                                   class="btn btn-sm btn-outline-primary p-2" title="View Profile">
+                                    <i class="bi bi-eye" style="font-size: 0.9rem;"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 3rem; color: #cbd5e0;"></i>
+                <p class="text-muted mt-3 mb-0">
+                    No students have registered for this event yet.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Card Footer with Summary -->
+        {% if participant_details %}
+        <div class="card-footer bg-light border-top text-muted small">
+            <i class="bi bi-info-circle"></i> 
+            <strong>{{ total_participants }}</strong> student{{ 's' if total_participants != 1 else '' }} registered for this event
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Export Options (Optional) -->
+    {% if participant_details %}
+    <div class="mt-4">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h6 class="card-title mb-3">
+                    <i class="bi bi-download"></i> Export Options
+                </h6>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="exportToCSV()">
+                        <i class="bi bi-filetype-csv"></i> Export as CSV
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+                        <i class="bi bi-printer"></i> Print List
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function exportToCSV() {
+        const table = document.querySelector('table');
+        if (!table) return;
+
+        let csv = [];
+        let rows = table.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            let csvRow = [];
+            let cols = row.querySelectorAll('td, th');
+
+            cols.forEach(col => {
+                csvRow.push(col.innerText);
+            });
+
+            csv.push(csvRow.join(','));
+        });
+
+        downloadCSV(csv.join('\n'), "{{ event.title }}_participants.csv");
+    }
+
+    function downloadCSV(csv, filename) {
+        let csvFile;
+        let downloadLink;
+
+        csvFile = new Blob([csv], {type: 'text/csv'});
+        downloadLink = document.createElement('a');
+        downloadLink.setAttribute('href', URL.createObjectURL(csvFile));
+        downloadLink.setAttribute('download', filename);
+        downloadLink.click();
+    }
+</script>
+
+<style>
+    @media print {
+        .btn, .card-header, .card-footer, a[href]:after {
+            display: none;
+        }
+    }
+</style>
+
+{% endblock %}

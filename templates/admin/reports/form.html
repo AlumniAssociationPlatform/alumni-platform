@@ -1,0 +1,197 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-primary"><i class="bi bi-file-earmark-plus"></i> Generate New Report</h2>
+            <p class="text-muted">Select a report type and configure parameters</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('admin.reports') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin.generate_report') }}">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Report Configuration</h5>
+            </div>
+            <div class="card-body">
+
+                <!-- Report Type Selection -->
+                <div class="mb-4">
+                    <label for="report_type" class="form-label">
+                        <strong>Report Type <span class="text-danger">*</span></strong>
+                    </label>
+                    <select class="form-select" id="report_type" name="report_type" required onchange="updateOptions()">
+                        <option value="">-- Select Report Type --</option>
+                        {% for type_key, type_name in report_types %}
+                        <option value="{{ type_key }}">{{ type_name }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted d-block mt-2" id="type_description"></small>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-4">
+                    <label for="description" class="form-label">Description (Optional)</label>
+                    <textarea class="form-control" id="description" name="description" rows="3"
+                        placeholder="Add any notes or context for this report..."></textarea>
+                </div>
+
+                <!-- Dynamic Options Based on Report Type -->
+                <div id="options_container">
+                    <!-- User Statistics Options -->
+                    <div id="user_statistics_options" class="report-options" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="days_user" class="form-label">Period (Last N Days)</label>
+                                <input type="number" class="form-control" id="days_user" name="days" value="30" min="1"
+                                    max="365">
+                                <small class="text-muted">Analyze user data from the last N days</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alumni Network Options -->
+                    <div id="alumni_network_options" class="report-options" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="department_alumni" class="form-label">Department Filter (Optional)</label>
+                                <input type="text" class="form-control" id="department_alumni" name="department"
+                                    placeholder="Leave empty for all departments">
+                                <small class="text-muted">Filter alumni by specific department</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Analytics Options -->
+                    <div id="job_analytics_options" class="report-options" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="days_job" class="form-label">Period (Last N Days)</label>
+                                <input type="number" class="form-control" id="days_job" name="days" value="30" min="1"
+                                    max="365">
+                                <small class="text-muted">Analyze job data from the last N days</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Event Summary Options -->
+                    <div id="event_summary_options" class="report-options" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="days_event" class="form-label">Period (Last N Days)</label>
+                                <input type="number" class="form-control" id="days_event" name="days" value="90" min="1"
+                                    max="365">
+                                <small class="text-muted">Analyze event data from the last N days</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Announcement Options -->
+                    <div id="announcements_options" class="report-options" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="days_announcement" class="form-label">Period (Last N Days)</label>
+                                <input type="number" class="form-control" id="days_announcement" name="days" value="30"
+                                    min="1" max="365">
+                                <small class="text-muted">Analyze announcement data from the last N days</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Placement Stats (No additional options) -->
+                    <div id="placement_stats_options" class="report-options" style="display:none;">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            This report analyzes all alumni placement and career statistics.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-gear"></i> Generate Report
+            </button>
+            <a href="{{ url_for('admin.reports') }}" class="btn btn-secondary btn-lg">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+        </div>
+    </form>
+
+</div>
+
+<script>
+    const descriptions = {
+        'user_statistics': 'Provides comprehensive statistics about system users including registration trends, approval status, user roles, and activity metrics.',
+        'alumni_network': 'Analyzes the alumni network including employment status, company distribution, and batch year statistics.',
+        'job_analytics': 'Shows job posting trends, application statistics, company partnerships, and job market analysis.',
+        'event_summary': 'Summarizes event activities, participation rates, and departmental event distribution.',
+        'placement_stats': 'Detailed placement and career statistics for all alumni.',
+        'announcements': 'Analyzes announcement activity and engagement metrics.',
+    };
+
+    function updateOptions() {
+        const reportType = document.getElementById('report_type').value;
+        const optionsContainer = document.getElementById('options_container');
+
+        // Hide all options
+        document.querySelectorAll('.report-options').forEach(el => {
+            el.style.display = 'none';
+        });
+
+        // Show selected options
+        if (reportType) {
+            const optionId = reportType + '_options';
+            const optionEl = document.getElementById(optionId);
+            if (optionEl) {
+                optionEl.style.display = 'block';
+            }
+
+            // Update description
+            document.getElementById('type_description').textContent = descriptions[reportType] || '';
+        } else {
+            document.getElementById('type_description').textContent = '';
+        }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        updateOptions();
+    });
+</script>
+
+<style>
+    .form-label {
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+
+    .form-control,
+    .form-select {
+        border-color: #dee2e6;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .report-options {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-top: 1rem;
+        border-left: 4px solid #0d6efd;
+    }
+</style>
+{% endblock %}

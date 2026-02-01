@@ -1,0 +1,148 @@
+{% extends "alumni/base.html" %}
+
+{% block content %}
+<div class="container-lg mt-2">
+
+    <!-- Back Button -->
+    <div class="mb-3">
+        <a href="{{ url_for('alumni.guidance') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- Page Title -->
+    <h3 class="mb-4">
+        {% if action == "create" %}
+        Create Guidance Program
+        {% else %}
+        Update Guidance Program
+        {% endif %}
+    </h3>
+
+    <!-- FORM START -->
+    <form method="POST" id="guidanceForm" novalidate>
+
+        <!-- Program Title -->
+        <div class="mb-3">
+            <label for="title" class="form-label">
+                Program Title <span class="text-danger">*</span>
+            </label>
+            <input type="text" class="form-control" id="title" name="title"
+                value="{{ guidance.title if guidance else '' }}" minlength="5" maxlength="200" required>
+            <div class="invalid-feedback"></div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-3">
+            <label for="description" class="form-label">
+                Program Description <span class="text-danger">*</span>
+            </label>
+            <textarea class="form-control" id="description" name="description" rows="5" minlength="20"
+                required>{{ guidance.description if guidance else '' }}</textarea>
+            <small class="form-text text-muted"><span id="charCount">0</span>/2000 characters</small>
+            <div class="invalid-feedback"></div>
+        </div>
+
+        <!-- Category -->
+        <div class="mb-3">
+            <label for="category" class="form-label">
+                Category <span class="text-danger">*</span>
+            </label>
+            <select class="form-select" id="category" name="category" required>
+                <option value="">Select category</option>
+                <option value="Career" {% if guidance and guidance.category=="Career" %}selected{% endif %}>Career
+                </option>
+                <option value="Technical" {% if guidance and guidance.category=="Technical" %}selected{% endif %}>
+                    Technical</option>
+                <option value="Personal" {% if guidance and guidance.category=="Personal" %}selected{% endif %}>Personal
+                </option>
+                <option value="Academic" {% if guidance and guidance.category=="Academic" %}selected{% endif %}>Academic
+                </option>
+                <option value="Placement" {% if guidance and guidance.category=="Placement" %}selected{% endif %}>
+                    Placement</option>
+            </select>
+            <div class="invalid-feedback"></div>
+        </div>
+
+        <!-- Duration -->
+        <div class="mb-3">
+            <label for="duration_weeks" class="form-label">
+                Duration (Weeks) <span class="text-danger">*</span>
+            </label>
+            <input type="number" class="form-control" id="duration_weeks" name="duration_weeks" min="1" max="52"
+                value="{{ guidance.duration_weeks if guidance else 4 }}" required>
+            <div class="invalid-feedback"></div>
+        </div>
+
+        <!-- Meeting Frequency -->
+        <div class="mb-3">
+            <label for="meeting_frequency" class="form-label">
+                Meeting Frequency <span class="text-danger">*</span>
+            </label>
+            <select class="form-select" id="meeting_frequency" name="meeting_frequency" required>
+                <option value="">Select frequency</option>
+                <option value="Weekly" {% if guidance and guidance.meeting_frequency=="Weekly" %}selected{% endif %}>
+                    Weekly</option>
+                <option value="Bi-weekly" {% if guidance and guidance.meeting_frequency=="Bi-weekly" %}selected{% endif
+                    %}>Bi-weekly</option>
+                <option value="Monthly" {% if guidance and guidance.meeting_frequency=="Monthly" %}selected{% endif %}>
+                    Monthly</option>
+                <option value="As needed" {% if guidance and guidance.meeting_frequency=="As needed" %}selected{% endif
+                    %}>As needed</option>
+            </select>
+            <div class="invalid-feedback"></div>
+        </div>
+
+        <!-- Preferred Method -->
+        <div class="mb-3">
+            <label for="preferred_method" class="form-label">
+                Preferred Method <span class="text-danger">*</span>
+            </label>
+            <select class="form-select" id="preferred_method" name="preferred_method" required>
+                <option value="">Select method</option>
+                <option value="Virtual" {% if guidance and guidance.preferred_method=="Virtual" %}selected{% endif %}>
+                    Virtual</option>
+                <option value="In-person" {% if guidance and guidance.preferred_method=="In-person" %}selected{% endif
+                    %}>In-person</option>
+                <option value="Both" {% if guidance and guidance.preferred_method=="Both" %}selected{% endif %}>Both
+                </option>
+            </select>
+            <div class="invalid-feedback"></div>
+        </div>
+
+        <!-- Status (Only for Edit) -->
+        {% if action == "edit" %}
+        <div class="mb-3">
+            <label for="status" class="form-label">
+                Status
+            </label>
+            <select class="form-select" id="status" name="status">
+                <option value="active" {% if guidance.status=="active" %}selected{% endif %}>Active</option>
+                <option value="completed" {% if guidance.status=="completed" %}selected{% endif %}>Completed</option>
+                <option value="archived" {% if guidance.status=="archived" %}selected{% endif %}>Archived</option>
+            </select>
+            <div class="invalid-feedback"></div>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{{ url_for('alumni.guidance') }}" class="btn btn-secondary">
+                Cancel
+            </a>
+            <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+                {% if action == "create" %}
+                Create Program
+                {% else %}
+                Update Program
+                {% endif %}
+            </button>
+        </div>
+
+    </form>
+    <!-- FORM END -->
+
+</div>
+
+<script src="{{ url_for('static', filename='js/guidance_validation.js') }}"></script>
+{% endblock %}

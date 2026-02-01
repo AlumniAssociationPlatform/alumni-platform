@@ -1,0 +1,116 @@
+{% extends "faculty/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Department Alumni</h2>
+            <p class="text-muted">Alumni network from {{ department }}</p>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Alumni</h6>
+                    <h3>{{ alumni_list|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alumni Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light">
+            <h6 class="mb-0">Alumni List</h6>
+        </div>
+        <div class="card-body">
+            {% if alumni_list %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Alumni ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Batch Year</th>
+                                <th>Current Company</th>
+                                <th>Current Role</th>
+                                <th>LinkedIn Profile</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alumni in alumni_list %}
+                            <tr>
+                                <td><strong>{{ alumni.alumni_id }}</strong></td>
+                                <td>{{ alumni.user.name }}</td>
+                                <td>{{ alumni.user.email }}</td>
+                                <td>{{ alumni.batch_year }}</td>
+                                <td>
+                                    {% if alumni.current_company %}
+                                        {{ alumni.current_company }}
+                                    {% else %}
+                                        <span class="badge bg-secondary">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if alumni.current_role %}
+                                        {{ alumni.current_role }}
+                                    {% else %}
+                                        <span class="badge bg-secondary">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if alumni.linkedin_profile %}
+                                        <a href="{{ alumni.linkedin_profile if alumni.linkedin_profile.startswith('http') else 'https://' + alumni.linkedin_profile }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-linkedin"></i> View
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('faculty.view_alumni', alumni_id=alumni.id) }}" class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle"></i>
+                    No alumni found in your department yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Information Card -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3">About Alumni Network</h6>
+                    <p>
+                        This section displays all alumni from your department. You can:
+                    </p>
+                    <ul>
+                        <li>View alumni profiles and career information</li>
+                        <li>Connect alumni with current students</li>
+                        <li>Organize mentorship programs</li>
+                        <li>Facilitate industry interactions</li>
+                        <li>Reach out to alumni for seminars and guest lectures</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

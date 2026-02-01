@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Student Dashboard | Alumni Portal{% endblock %}</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <!-- Bootstrap Override CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-override.css') }}">
+    <!-- Toastr CSS for notifications -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- ================= STUDENT HEADER ================= -->
+    <nav class="navbar navbar-dark fixed-top student-header">
+        <div class="container-fluid">
+            <span class="navbar-brand fw-bold">
+                <i class="bi bi-mortarboard-fill"></i> Alumni Portal – Student
+            </span>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    {% if current_user.profile_photo %}
+                    <img src="{{ url_for('static', filename=current_user.profile_photo) }}" 
+                         alt="Profile Photo" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #fff;">
+                    {% else %}
+                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" 
+                         style="width: 40px; height: 40px; color: #c41e3a; font-weight: bold; border: 2px solid #fff;">
+                        {{ current_user.name[0].upper() }}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <span class="navbar-brand-sub d-block">{{ current_user.name }}</span>
+                        <span style="color: #ecf0f1; font-size: 0.85rem;">Student</span>
+                    </div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-box-arrow-right"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ================= STUDENT LAYOUT ================= -->
+    <div class="admin-container">
+        <!-- ================= SIDEBAR ================= -->
+        <aside class="sidebar student-sidebar">
+            <ul class="sidebar-menu">
+
+                <li>
+                    <a href="{{ url_for('student.dashboard') }}" 
+                       class="{% if request.endpoint == 'student.dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+
+                <li class="menu-title">Account & Profile</li>
+
+                <li>
+                    <a href="{{ url_for('student.profile') }}"
+                       class="{% if request.endpoint == 'student.profile' %}active{% endif %}">
+                        <i class="bi bi-person-circle"></i> View Profile
+                    </a>
+                </li>
+
+                <li class="menu-title">Explore</li>
+
+                <li>
+                    <a href="{{ url_for('student.alumni_list') }}"
+                       class="{% if request.endpoint == 'student.alumni_list' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-people-fill"></i> Alumni Profiles
+                        </span>
+                        <span class="badge badge-count rounded-pill">{{ total_alumni }}</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('student.announcements') }}"
+                       class="{% if request.endpoint == 'student.announcements' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-megaphone-fill"></i> Announcements
+                        </span>
+                        <span class="badge badge-count rounded-pill">{{ total_announcements }}</span>
+                    </a>
+                </li>
+
+                <li class="menu-title">Directory</li>
+
+                <li>
+                    <a href="{{ url_for('student.students_list') }}"
+                       class="{% if request.endpoint == 'student.students_list' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-people"></i> Students
+                        </span>
+                        <span class="badge badge-count rounded-pill">{{ total_students }}</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('student.faculty_list') }}"
+                       class="{% if request.endpoint == 'student.faculty_list' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-person-badge"></i> Faculty
+                        </span>
+                        <span class="badge badge-count rounded-pill">{{ total_faculty }}</span>
+                    </a>
+                </li>
+
+                <li class="menu-title">Opportunities</li>
+
+                <li>
+                    <a href="{{ url_for('student.jobs') }}"
+                       class="{% if request.endpoint == 'student.jobs' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-briefcase-fill"></i> Jobs & Internships
+                        </span>
+                        <span class="badge badge-count rounded-pill">{{ total_jobs }}</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('student.my_applications') }}"
+                       class="{% if request.endpoint == 'student.my_applications' %}active{% endif %}">
+                        <i class="bi bi-file-earmark-check"></i> My Applications
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('student.events') }}"
+                       class="{% if request.endpoint == 'student.events' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-calendar-check-fill"></i> Events
+                        </span>
+                        <span class="badge badge-count rounded-pill">{{ total_events }}</span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('student.seminars') }}"
+                       class="{% if request.endpoint == 'student.seminars' or request.endpoint == 'student.view_seminar' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-calendar2-event"></i> Seminars & Lectures
+                        </span>
+                        <span class="badge badge-count rounded-pill">{{ total_seminars }}</span>
+                    </a>
+                </li>
+
+                <li class="menu-title">Support</li>
+
+                <li>
+                    <a href="{{ url_for('student.guidance') }}"
+                       class="{% if request.endpoint == 'student.guidance' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-chat-quote"></i> Guidance & Mentorship
+                        </span>
+                        <span class="badge badge-count rounded-pill">{{ total_guidance }}</span>
+                    </a>
+                </li>
+
+                <!-- <li>
+                    <a href="{{ url_for('student.my_enrollments') }}"
+                       class="{% if request.endpoint == 'student.my_enrollments' %}active{% endif %}">
+                        <i class="bi bi-bookmark-check"></i> My Enrollments
+                    </a>
+                </li> -->
+
+            </ul>
+        </aside>
+
+        <!-- ================= MAIN CONTENT ================= -->
+        <main class="content student-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {% if category == 'success' %}<i class="bi bi-check-circle"></i>
+                            {% elif category == 'error' %}<i class="bi bi-exclamation-circle"></i>
+                            {% elif category == 'warning' %}<i class="bi bi-exclamation-triangle"></i>
+                            {% else %}<i class="bi bi-info-circle"></i>
+                            {% endif %}
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <!-- jQuery (required by toastr) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Student Job Application Module -->
+    <script src="{{ url_for('static', filename='js/student_job_application.js') }}"></script>
+
+    <script>
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            positionClass: "toast-top-right",
+            timeOut: "4000"
+        };
+
+        (function () {
+            var flashes = {{ get_flashed_messages(with_categories = true) | tojson | safe }};
+
+            for (var i = 0; i < flashes.length; i++) {
+                var category = flashes[i][0];
+                var message = flashes[i][1];
+
+                if (category === 'success') toastr.success(message);
+                else if (category === 'info') toastr.info(message);
+                else if (category === 'warning') toastr.warning(message);
+                else if (category === 'danger' || category === 'error') toastr.error(message);
+                else toastr.info(message);
+            }
+        })();
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+
+</html>

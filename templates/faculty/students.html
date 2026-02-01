@@ -1,0 +1,156 @@
+{% extends "faculty/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Department Students</h2>
+            <p class="text-muted">Students from {{ department }}</p>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Students</h6>
+                    <h3>{{ students_list|length }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-light">
+            <h6 class="mb-0">Students List</h6>
+        </div>
+        <div class="card-body">
+            {% if students_list %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Batch Year</th>
+                                <th>Skills</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students_list %}
+                            <tr>
+                                <td><strong>{{ student.student_id }}</strong></td>
+                                <td>{{ student.user.name }}</td>
+                                <td>{{ student.user.email }}</td>
+                                <td>{{ student.batch_year }}</td>
+                                <td>
+                                    {% if student.skills %}
+                                        <small class="text-muted">{{ student.skills[:50] }}...</small>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Not provided</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary view-student-btn" 
+                                            data-student-id="{{ student.id }}"
+                                            title="View Profile">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info" role="alert">
+                    <i class="bi bi-info-circle"></i>
+                    No students found in your department yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Information Card -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3">Faculty Responsibilities with Students</h6>
+                    <p>
+                        As a faculty member, you can:
+                    </p>
+                    <ul>
+                        <li>Monitor student academic progress</li>
+                        <li>Provide career guidance and mentorship</li>
+                        <li>Recommend students for job opportunities</li>
+                        <li>Guide students through placement process</li>
+                        <li>Help develop student skills and competencies</li>
+                        <li>Connect students with alumni mentors</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Detail Modal -->
+<div class="modal fade" id="studentDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Student Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="studentDetailContent">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const viewButtons = document.querySelectorAll('.view-student-btn');
+    const modalElement = document.getElementById('studentDetailModal');
+    
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const studentId = this.getAttribute('data-student-id');
+            console.log('Loading student:', studentId);
+            
+            // Show the modal
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+            
+            // Fetch student details
+            fetch(`/faculty/student/${studentId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    document.getElementById('studentDetailContent').innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('studentDetailContent').innerHTML = 
+                        '<div class="alert alert-danger">Error loading student details: ' + error.message + '</div>';
+                    console.error('Error:', error);
+                });
+        });
+    });
+});
+</script>
+{% endblock %}

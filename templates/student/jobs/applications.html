@@ -1,0 +1,254 @@
+{% extends "student/base.html" %}
+
+{% block title %}My Job Applications - Alumni Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="mb-1">
+                <i class="fas fa-file-contract"></i> My Job Applications
+            </h2>
+            <p class="text-muted">Track the status of all your job and internship applications</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('student.jobs') }}" class="btn btn-outline-primary">
+                <i class="fas fa-search"></i> Browse More Jobs
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="mb-4">
+        <div class="btn-group" role="group" aria-label="Application status filter">
+            <a href="{{ url_for('student.my_applications') }}" 
+               class="btn btn-outline-primary {% if not status %}active{% endif %}">
+                <i class="fas fa-list"></i> All ({{ applications.total }})
+            </a>
+            <a href="{{ url_for('student.my_applications', status='applied') }}" 
+               class="btn btn-outline-info {% if status == 'applied' %}active{% endif %}">
+                <i class="fas fa-paper-plane"></i> Applied
+            </a>
+            <a href="{{ url_for('student.my_applications', status='shortlisted') }}" 
+               class="btn btn-outline-warning {% if status == 'shortlisted' %}active{% endif %}">
+                <i class="fas fa-star"></i> Shortlisted
+            </a>
+            <a href="{{ url_for('student.my_applications', status='selected') }}" 
+               class="btn btn-outline-success {% if status == 'selected' %}active{% endif %}">
+                <i class="fas fa-check-circle"></i> Selected
+            </a>
+            <a href="{{ url_for('student.my_applications', status='rejected') }}" 
+               class="btn btn-outline-danger {% if status == 'rejected' %}active{% endif %}">
+                <i class="fas fa-times-circle"></i> Rejected
+            </a>
+        </div>
+    </div>
+
+    {% if applications.items %}
+    <div class="row">
+        {% for app in applications.items %}
+        <div class="col-lg-12 mb-3">
+            <div class="card job-application-card h-100">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <div class="d-flex align-items-start gap-3">
+                                <!-- Job Icon/Placeholder -->
+                                <div class="job-icon bg-light rounded d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; flex-shrink: 0;">
+                                    <i class="fas fa-briefcase text-primary" style="font-size: 1.5rem;"></i>
+                                </div>
+                                
+                                <!-- Job Details -->
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-1">
+                                        {% if app.job %}
+                                        <a href="{{ url_for('student.view_job', job_id=app.job.id) }}" class="text-decoration-none">
+                                            {{ app.job.title }}
+                                        </a>
+                                        {% else %}
+                                        Job Posting (Archived)
+                                        {% endif %}
+                                    </h5>
+                                    {% if app.job %}
+                                    <p class="text-muted mb-2">
+                                        <i class="fas fa-building"></i> <strong>{{ app.job.company }}</strong>
+                                    </p>
+                                    <div class="mb-2">
+                                        <span class="badge {% if app.job.job_type == 'Job' %}bg-success{% elif app.job.job_type == 'Internship' %}bg-warning{% else %}bg-primary{% endif %}">
+                                            {{ app.job.job_type }}
+                                        </span>
+                                        {% if app.job.location %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-map-marker-alt"></i> {{ app.job.location }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                    <small class="text-muted d-block">
+                                        <i class="fas fa-calendar"></i> Applied: <strong>{{ app.applied_at|datetime('%d %b %Y, %I:%M %p') }}</strong>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Status and Actions -->
+                        <div class="col-lg-4 text-end">
+                            <div class="mb-3">
+                                {% if app.status == 'applied' %}
+                                <span class="badge bg-info p-2" style="font-size: 0.9rem;">
+                                    <i class="fas fa-paper-plane"></i> Applied
+                                </span>
+                                <small class="d-block text-muted mt-2">Awaiting review</small>
+                                {% elif app.status == 'shortlisted' %}
+                                <span class="badge bg-warning p-2" style="font-size: 0.9rem;">
+                                    <i class="fas fa-star"></i> Shortlisted
+                                </span>
+                                <small class="d-block text-muted mt-2">You've been shortlisted!</small>
+                                {% elif app.status == 'selected' %}
+                                <span class="badge bg-success p-2" style="font-size: 0.9rem;">
+                                    <i class="fas fa-check-circle"></i> Selected
+                                </span>
+                                <small class="d-block text-muted mt-2">Congratulations!</small>
+                                {% elif app.status == 'rejected' %}
+                                <span class="badge bg-danger p-2" style="font-size: 0.9rem;">
+                                    <i class="fas fa-times-circle"></i> Rejected
+                                </span>
+                                <small class="d-block text-muted mt-2">Application rejected</small>
+                                {% endif %}
+                            </div>
+
+                            <!-- Action Buttons -->
+                            {% if app.job %}
+                            <a href="{{ url_for('student.view_job', job_id=app.job.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i> View Job
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if applications.pages > 1 %}
+        <div class="col-lg-12 mt-4">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if applications.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('student.my_applications', page=1, status=status) }}">
+                            <i class="fas fa-chevron-left"></i> First
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('student.my_applications', page=applications.prev_num, status=status) }}">
+                            Previous
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for page_num in applications.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num == applications.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('student.my_applications', page=page_num, status=status) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                    {% endfor %}
+
+                    {% if applications.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('student.my_applications', page=applications.next_num, status=status) }}">
+                            Next
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('student.my_applications', page=applications.pages, status=status) }}">
+                            Last <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+
+    {% else %}
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="alert alert-info text-center py-5">
+                <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem; display: block; color: #0dcaf0;"></i>
+                <h5>No Applications Yet</h5>
+                <p class="mb-3 text-muted">
+                    You haven't applied for any jobs or internships yet.
+                </p>
+                <a href="{{ url_for('student.jobs') }}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Browse Jobs & Internships
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.job-application-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.job-application-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #0d6efd;
+}
+
+.job-application-card .card-title a {
+    color: #0d6efd;
+    font-weight: 600;
+}
+
+.job-application-card .card-title a:hover {
+    text-decoration: underline;
+}
+
+.job-icon {
+    border: 2px solid #e0e0e0;
+}
+
+@media (max-width: 768px) {
+    .col-lg-4 {
+        margin-top: 1rem;
+        text-align: left !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add smooth transitions and interactions
+    const cards = document.querySelectorAll('.job-application-card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}

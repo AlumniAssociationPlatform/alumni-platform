@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-primary">Manage Users</h2>
+</div>
+
+<table class="table table-bordered table-hover align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>Photo</th>
+            <th>Sr. No</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Approved</th>
+            <th>Status</th>
+            <th width="260">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td class="text-center">
+                {% if user.profile_photo %}
+                <img src="{{ url_for('static', filename=user.profile_photo) }}" 
+                     alt="Profile Photo" class="rounded-circle" 
+                     style="width: 40px; height: 40px; object-fit: cover;">
+                {% else %}
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" 
+                     style="width: 40px; height: 40px; margin: 0 auto;">
+                    <i class="bi bi-person-fill" style="font-size: 1.2rem; color: #ccc;"></i>
+                </div>
+                {% endif %}
+            </td>
+            <td>{{ loop.index }}</td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role.value }}</td>
+            <td>
+                {% if user.is_approved %}
+                <span class="badge bg-success">Yes</span>
+                {% else %}
+                <span class="badge bg-warning">No</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if user.is_blocked %}
+                <span class="badge bg-danger">Blocked</span>
+                {% else %}
+                <span class="badge bg-success">Active</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('admin.view_user', user_id=user.id) }}" class="btn btn-sm btn-secondary">View</a>
+
+                <form method="POST" action="{{ url_for('admin.toggle_block_user', user_id=user.id) }}" class="d-inline">
+                    <button class="btn btn-sm btn-warning">
+                        {{ "Unblock" if user.is_blocked else "Block" }}
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ url_for('admin.delete_user', user_id=user.id) }}" class="d-inline"
+                    onsubmit="return confirm('Are you sure?')">
+                    <button class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,257 @@
+{% extends "alumni/base.html" %}
+
+{% block content %}
+<div class="container-lg mt-5 pt-4">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2>
+            <i class="bi bi-briefcase-fill"></i> Available Opportunities
+        </h2>
+        <a href="{{ url_for('placement.create_job') }}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Post Opportunity
+        </a>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="job-filter-section">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label for="job_type" class="form-label">Filter by Type</label>
+                <select class="form-select" id="job_type" name="job_type" onchange="this.form.submit()">
+                    <option value="">All Types</option>
+                    <option value="Job" {% if job_type=='Job' %}selected{% endif %}>Jobs Only</option>
+                    <option value="Internship" {% if job_type=='Internship' %}selected{% endif %}>Internships Only
+                    </option>
+                    <option value="Both" {% if job_type=='Both' %}selected{% endif %}>Both (Job & Internship)</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ url_for('placement.browse_jobs') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-clockwise"></i> Clear Filters
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Stats -->
+    <div class="alert alert-info alert-dismissible fade show" role="alert" style="margin: 1.5rem 0;">
+        <i class="bi bi-info-circle"></i>
+        Showing <strong>{{ jobs.total }}</strong> opportunity(ies)
+        {% if job_type %} of type <strong>"{{ job_type }}"</strong>{% endif %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- No Jobs Message -->
+    {% if jobs.total == 0 %}
+    <div class="card border-0 bg-light">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: #cbd5e0;"></i>
+            <p class="text-muted mt-3 mb-0">
+                No opportunities found.
+                {% if job_type %}
+                <a href="{{ url_for('placement.browse_jobs') }}" class="fw-bold">Clear filters</a> to see all.
+                {% else %}
+                <a href="{{ url_for('placement.create_job') }}" class="fw-bold">Be the first to post one!</a>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Jobs List -->
+    <div class="row">
+        {% for job in jobs.items %}
+        <div class="col-12 mb-4">
+            {% if job.is_from_banner and job.banner_image %}
+            <!-- Banner Image Card - Image Only -->
+            <div class="job-card">
+                <div class="card-body p-0">
+                    <div class="row align-items-center g-0">
+                        <!-- Image on Left -->
+                        <div class="col-md-3">
+                            <img src="{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}" 
+                                alt="Job Banner" class="img-fluid" style="height: 200px; width: 100%; object-fit: cover; border-radius: 8px 0 0 8px;">
+                        </div>
+
+                        <!-- Info on Right -->
+                        <div class="col-md-9 p-3">
+                            <div class="row align-items-center h-100">
+                                <div class="col-md-8">
+                                    <h5 class="mb-1">{{ job.title }}</h5>
+                                    <small style="display: block; color: #666; margin-bottom: 5px; font-weight: 500;">
+                                        <i class="bi bi-building"></i> {{ job.company }}
+                                    </small>
+                                    <small style="display: block; color: #ff6b9d; margin-bottom: 10px; font-weight: 600;">
+                                        <i class="bi bi-image"></i> Job Posted via Image Upload
+                                    </small>
+                                    <small style="display: block; color: #666;">
+                                        <i class="bi bi-calendar-event"></i> Posted: {{ job.created_at|datetime }}
+                                    </small>
+                                </div>
+
+                                <!-- Action Button -->
+                                <div class="col-md-4 text-md-end">
+                                    <a href="{{ url_for('placement.view_job', job_id=job.id) }}" 
+                                        class="btn btn-sm btn-primary">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Normal Job Card - Show All Details -->
+            <div class="job-card">
+                <div class="card-body">
+                    <div class="row align-items-start">
+                        <div class="col-md-8">
+                            <!-- Job Title and Badges -->
+                            <div class="mb-2">
+                                <h5 class="job-card .card-title mb-2">
+                                    <a href="{{ url_for('placement.view_job', job_id=job.id) }}"
+                                        class="text-decoration-none">
+                                        {{ job.title }}
+                                    </a>
+                                    {% if job.job_type == 'Internship' %}
+                                    <span class="badge bg-info">Internship</span>
+                                    {% elif job.job_type == 'Job' %}
+                                    <span class="badge bg-success">Job</span>
+                                    {% else %}
+                                    <span class="badge bg-warning text-dark">Both</span>
+                                    {% endif %}
+                                </h5>
+                            </div>
+
+                            <!-- Company -->
+                            <div class="job-company">
+                                <i class="bi bi-building"></i>
+                                <span>{{ job.company }}</span>
+                                {% if job.location %}
+                                <span class="ms-3">
+                                    <i class="bi bi-geo-alt"></i> {{ job.location }}
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Description -->
+                            <p class="job-description">
+                                {{ job.description[:250] }}{% if job.description|length > 250 %}...{% endif %}
+                            </p>
+
+                            <!-- Meta Information -->
+                            <div class="job-meta">
+                                <span>
+                                    <i class="bi bi-calendar-event"></i>
+                                    Posted: {{ job.created_at|datetime }}
+                                </span>
+                                {% if job.application_deadline %}
+                                <span>
+                                    <i class="bi bi-clock"></i>
+                                    Deadline: {{ job.application_deadline.strftime('%d %b %Y') }}
+                                </span>
+                                {% endif %}
+                                {% if job.salary_range %}
+                                <span>
+                                    <i class="bi bi-cash-coin"></i>
+                                    {{ job.salary_range }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Action Button -->
+                        <div class="col-md-4">
+                            <a href="{{ url_for('placement.view_job', job_id=job.id) }}"
+                                class="btn btn-primary w-100">
+                                <i class="bi bi-arrow-right"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if jobs.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if jobs.has_prev %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('placement.browse_jobs', page=jobs.prev_num, job_type=job_type) }}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+
+            {% for page_num in jobs.iter_pages() %}
+            {% if page_num %}
+            {% if page_num == jobs.page %}
+            <li class="page-item active">
+                <span class="page-link">{{ page_num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('placement.browse_jobs', page=page_num, job_type=job_type) }}">
+                    {{ page_num }}
+                </a>
+            </li>
+            {% endif %}
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if jobs.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('placement.browse_jobs', page=jobs.next_num, job_type=job_type) }}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% endif %}
+</div>
+
+<style>
+    .job-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e0e0e0;
+        border-left: 4px solid #0d6efd;
+    }
+
+    .job-card:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-2px);
+        border-left-color: #0b5ed7;
+    }
+
+    .job-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .card-title a {
+        color: #0d6efd;
+    }
+
+    .card-title a:hover {
+        color: #0b5ed7;
+        text-decoration: underline !important;
+    }
+</style>
+
+{% endblock %}

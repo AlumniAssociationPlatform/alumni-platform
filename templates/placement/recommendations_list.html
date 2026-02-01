@@ -1,0 +1,181 @@
+{% extends "placement/base.html" %}
+
+{% block title %}Student Recommendations - Placement Cell{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-primary mb-0">
+                <i class="fas fa-star me-2"></i>
+                Student Recommendations
+            </h2>
+            <p class="text-muted">View all student recommendations made by faculties for job applications</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('placement.view_job_applications') }}" class="btn btn-outline-primary">
+                <i class="fas fa-file-alt me-1"></i>Job Applications
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-4">
+                    <label for="student_id" class="form-label">Student</label>
+                    <select class="form-select" id="student_id" name="student_id">
+                        <option value="">All Students</option>
+                        {% for student_id, student_name in students %}
+                        <option value="{{ student_id }}" {% if student_id|string == selected_student_id %}selected{% endif %}>
+                            {{ student_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="faculty_id" class="form-label">Faculty</label>
+                    <select class="form-select" id="faculty_id" name="faculty_id">
+                        <option value="">All Faculties</option>
+                        {% for faculty_id, faculty_name in faculties %}
+                        <option value="{{ faculty_id }}" {% if faculty_id|string == selected_faculty_id %}selected{% endif %}>
+                            {{ faculty_name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-1"></i>Apply Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recommendations List -->
+    {% if recommendations.items %}
+        {% for recommendation in recommendations.items %}
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h5 class="mb-2">
+                            <i class="fas fa-briefcase me-2 text-primary"></i>
+                            {{ recommendation.job.title }}
+                        </h5>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-info me-2">Student</span>
+                                    <strong>{{ recommendation.student.user.name }}</strong>
+                                </div>
+                                <small class="text-muted d-block">ID: {{ recommendation.student.student_id }}</small>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center mb-2">
+                                    <span class="badge bg-warning me-2">Faculty</span>
+                                    <strong>{{ recommendation.faculty.user.name }}</strong>
+                                </div>
+                                <small class="text-muted d-block">ID: {{ recommendation.faculty.faculty_id }}</small>
+                            </div>
+                        </div>
+                        <p class="mb-2">
+                            <strong>Company:</strong> {{ recommendation.job.company }}
+                        </p>
+                        <p class="mb-3">
+                            <strong>Recommendation:</strong>
+                        </p>
+                        <div class="bg-light p-3 rounded">
+                            {{ recommendation.recommendation_text }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="bg-light p-3 rounded">
+                            <h6 class="mb-3">Details</h6>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Recommended On</small>
+                                <strong>{{ recommendation.created_at.strftime('%Y-%m-%d %H:%M') }}</strong>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Department</small>
+                                <strong>{{ recommendation.student.department.replace('_', ' ').title() if recommendation.student.department else '-' }}</strong>
+                            </div>
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Batch Year</small>
+                                <strong>{{ recommendation.student.batch_year }}</strong>
+                            </div>
+                            <div>
+                                <a href="mailto:{{ recommendation.student.user.email }}" class="btn btn-sm btn-outline-secondary w-100 mb-2">
+                                    <i class="fas fa-envelope me-1"></i>Email Student
+                                </a>
+                                <a href="mailto:{{ recommendation.faculty.user.email }}" class="btn btn-sm btn-outline-secondary w-100">
+                                    <i class="fas fa-envelope me-1"></i>Email Faculty
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>No recommendations found</strong>
+        <p class="mb-0">There are no student recommendations matching the current filters.</p>
+    </div>
+    {% endif %}
+
+    <!-- Pagination -->
+    {% if recommendations.pages > 1 %}
+    <nav aria-label="Page navigation" class="d-flex justify-content-center mt-4">
+        <ul class="pagination">
+            {% if recommendations.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if selected_student_id %}&student_id={{ selected_student_id }}{% endif %}{% if selected_faculty_id %}&faculty_id={{ selected_faculty_id }}{% endif %}">
+                    First
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ recommendations.prev_num }}{% if selected_student_id %}&student_id={{ selected_student_id }}{% endif %}{% if selected_faculty_id %}&faculty_id={{ selected_faculty_id }}{% endif %}">
+                    Previous
+                </a>
+            </li>
+            {% endif %}
+
+            {% for page_num in recommendations.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num == recommendations.page %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ page_num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_num }}{% if selected_student_id %}&student_id={{ selected_student_id }}{% endif %}{% if selected_faculty_id %}&faculty_id={{ selected_faculty_id }}{% endif %}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+
+            {% if recommendations.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ recommendations.next_num }}{% if selected_student_id %}&student_id={{ selected_student_id }}{% endif %}{% if selected_faculty_id %}&faculty_id={{ selected_faculty_id }}{% endif %}">
+                    Next
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ recommendations.pages }}{% if selected_student_id %}&student_id={{ selected_student_id }}{% endif %}{% if selected_faculty_id %}&faculty_id={{ selected_faculty_id }}{% endif %}">
+                    Last
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

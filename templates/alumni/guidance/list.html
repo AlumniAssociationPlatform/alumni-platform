@@ -1,0 +1,292 @@
+{% extends "alumni/base.html" %}
+
+{% block content %}
+<div class="container-lg">
+    <!-- Page Header -->
+    <div class="page-header">
+        <h2 class="text-primary">
+            <i class=" bi bi-chat-dots"></i> My Guidance Sessions
+        </h2>
+        <a href="{{ url_for('alumni.create_guidance') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Create New Guidance
+        </a>
+    </div>
+
+    <!-- Flash Messages -->
+    {% if get_flashed_messages() %}
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- Filter & Search Section -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <input type="text" id="searchInput" class="form-control"
+                placeholder="Search guidance by title or student...">
+        </div>
+        <div class="col-md-6">
+            <select id="categoryFilter" class="form-select">
+                <option value="">All Categories</option>
+                <option value="Career">Career</option>
+                <option value="Technical">Technical</option>
+                <option value="Personal">Personal</option>
+                <option value="Academic">Academic</option>
+                <option value="Placement">Placement</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- No Guidance Message -->
+    {% if guidances.total == 0 %}
+    <div class="card border-0 bg-light">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: #cbd5e0;"></i>
+            <h5 class="mt-3">No Guidance Sessions Yet</h5>
+            <p class="text-muted">
+                Start mentoring students by creating your first guidance session.
+                <a href="{{ url_for('alumni.create_guidance') }}" class="fw-bold text-decoration-none">Create one
+                    now!</a>
+            </p>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Guidance Cards Grid -->
+    <div class="row">
+        {% for guidance in guidances.items %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="guidance-card card h-100">
+                <div class="card-body">
+                    <!-- Category Badge -->
+                    <div class="mb-2">
+                        {% if guidance.category == "Career" %}
+                        <span class="badge bg-primary">Career</span>
+                        {% elif guidance.category == "Technical" %}
+                        <span class="badge bg-info">Technical</span>
+                        {% elif guidance.category == "Personal" %}
+                        <span class="badge bg-warning text-dark">Personal</span>
+                        {% elif guidance.category == "Academic" %}
+                        <span class="badge bg-success">Academic</span>
+                        {% elif guidance.category == "Placement" %}
+                        <span class="badge bg-danger">Placement</span>
+                        {% endif %}
+
+                        {% if guidance.status == "active" %}
+                        <span class="badge bg-success">Active</span>
+                        {% elif guidance.status == "completed" %}
+                        <span class="badge bg-secondary">Completed</span>
+                        {% else %}
+                        <span class="badge bg-dark">Archived</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Title -->
+                    <h5 class="card-title">{{ guidance.title }}</h5>
+
+                    <!-- Student Info -->
+                    <div class="guidance-meta mb-3">
+                        <p class="text-muted small mb-1">
+                            <i class="bi bi-person"></i>
+                            <strong>Student:</strong>
+                            {% if guidance.student %}
+                            <span class="badge bg-success">{{ guidance.student.user.name }}</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Open to all students</span>
+                            {% endif %}
+                        </p>
+                        <p class="text-muted small mb-1">
+                            <i class="bi bi-calendar-range"></i>
+                            <strong>Duration:</strong> {{ guidance.duration_weeks }} weeks
+                        </p>
+                        <p class="text-muted small mb-1">
+                            <i class="bi bi-clock"></i>
+                            <strong>Frequency:</strong> {{ guidance.meeting_frequency }}
+                        </p>
+                    </div>
+
+                    <!-- Description Preview -->
+                    <p class="card-text text-muted small">
+                        {{ guidance.description[:100] }}{% if guidance.description|length > 100 %}...{% endif %}
+                    </p>
+
+                    <!-- Session Count -->
+                    <div class="guidance-stats mb-3">
+                        <span class="badge bg-light text-dark">
+                            <i class="bi bi-chat-left-text"></i>
+                            {{ guidance.guidance_sessions.count() }} Sessions
+                        </span>
+                        <span class="badge bg-light text-dark ms-2">
+                            <i class="bi bi-camera-video"></i>
+                            {{ guidance.preferred_method }}
+                        </span>
+                    </div>
+
+                    <!-- Created Date -->
+                    <small class="text-muted">
+                        <i class="bi bi-calendar"></i>
+                        Created: {{ guidance.created_at.strftime('%d %b %Y') }}
+                    </small>
+                </div>
+
+                <!-- Card Footer with Actions -->
+                <div class="card-footer bg-light border-top">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ url_for('alumni.view_guidance', guidance_id=guidance.id) }}"
+                            class="btn btn-sm btn-outline-primary flex-fill">
+                            <i class="bi bi-eye"></i> View
+                        </a>
+                        <a href="{{ url_for('alumni.view_enrolled_students', guidance_id=guidance.id) }}"
+                            class="btn btn-sm btn-outline-success flex-fill">
+                            <i class="bi bi-people"></i> Enrolled ({{ guidance.enrollments.count() }})
+                        </a>
+                        <a href="{{ url_for('alumni.edit_guidance', guidance_id=guidance.id) }}"
+                            class="btn btn-sm btn-outline-warning flex-fill">
+                            <i class="bi bi-pencil"></i> Edit
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger flex-fill"
+                            onclick="deleteGuidance({{ guidance.id }})">
+                            <i class="bi bi-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if guidances.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if guidances.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('alumni.guidance', page=guidances.prev_num) }}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+
+            {% for page_num in guidances.iter_pages() %}
+            {% if page_num %}
+            {% if page_num == guidances.page %}
+            <li class="page-item active">
+                <span class="page-link">{{ page_num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('alumni.guidance', page=page_num) }}">
+                    {{ page_num }}
+                </a>
+            </li>
+            {% endif %}
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if guidances.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('alumni.guidance', page=guidances.next_num) }}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% endif %}
+</div>
+
+<style>
+    .guidance-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .guidance-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .guidance-meta p {
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .page-header h2 {
+        color: #0d6efd;
+        font-weight: 600;
+        margin: 0;
+    }
+</style>
+
+<script>
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function () {
+        const searchValue = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.guidance-card');
+
+        cards.forEach(card => {
+            const text = card.innerText.toLowerCase();
+            card.parentElement.style.display = text.includes(searchValue) ? '' : 'none';
+        });
+    });
+
+    // Category filter
+    document.getElementById('categoryFilter').addEventListener('change', function () {
+        const filterValue = this.value;
+        const cards = document.querySelectorAll('.guidance-card');
+
+        cards.forEach(card => {
+            if (filterValue === '') {
+                card.parentElement.style.display = '';
+            } else {
+                const category = card.querySelector('.badge').innerText.trim();
+                card.parentElement.style.display = category === filterValue ? '' : 'none';
+            }
+        });
+    });
+
+    // Delete guidance
+    function deleteGuidance(guidanceId) {
+        if (confirm('Are you sure you want to delete this guidance? This action cannot be undone.')) {
+            fetch(`/alumni/guidance/${guidanceId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        toastr.success(data.message);
+                        setTimeout(() => window.location.href = data.redirect_url, 1500);
+                    } else {
+                        toastr.error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    toastr.error('An error occurred while deleting the guidance.');
+                });
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "student/base.html" %}
+
+{% block title %}Jobs & Internships | Student - Alumni Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-briefcase-fill"></i> Jobs & Internships</h1>
+    <p>Browse and apply for verified job postings from alumni</p>
+</div>
+
+<div class="container-fluid">
+    <!-- Search and Filter Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('student.jobs') }}" class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Search Jobs</label>
+                    <input type="text" class="form-control" name="search"
+                        placeholder="Search by title, company, or description..." value="{{ search }}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Job Type</label>
+                    <select class="form-select" name="job_type">
+                        <option value="">All Types</option>
+                        <option value="Job" {% if job_type=='Job' %}selected{% endif %}>Full-Time Job</option>
+                        <option value="Internship" {% if job_type=='Internship' %}selected{% endif %}>Internship
+                        </option>
+                        <option value="Both" {% if job_type=='Both' %}selected{% endif %}>Both</option>
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Jobs Grid -->
+    <div class="row">
+        {% if jobs.items %}
+        {% for job in jobs.items %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-light border-0">
+                    {% if job.job_type == "Internship" %}
+                        <span class="badge bg-info">Internship</span>
+                    {% elif job.job_type == "Job" %}
+                        <span class="badge bg-success">Job</span>
+                    {% else %}
+                        <span class="badge bg-primary">Both</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">{{ job.title }}</h5>
+                    <p class="card-text text-muted fw-bold">
+                        <i class="bi bi-building"></i> {{ job.company }}
+                    </p>
+
+                    <p class="card-text small text-muted">
+                        {{ job.description[:100] }}...
+                    </p>
+
+                    {% if job.salary %}
+                    <div class="small mb-2">
+                        <i class="bi bi-currency-dollar text-success"></i>
+                        <strong>{{ job.salary }}</strong>
+                    </div>
+                    {% endif %}
+
+                    <div class="small text-muted">
+                        <i class="bi bi-calendar"></i> Posted: {{ job.created_at.strftime('%d %b %Y') }}
+                    </div>
+                </div>
+                {% if job.banner_image %}
+                <div class="card-img-bottom" style="height: 200px; background-image: url('{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}'); background-size: cover; background-position: center;"></div>
+                {% endif %}
+                <div class="card-footer bg-light border-0">
+                    <a href="{{ url_for('student.view_job', job_id=job.id) }}" class="btn btn-sm btn-primary w-100">
+                        <i class="bi bi-arrow-right"></i> View & Apply
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="col-12">
+            <div class="alert alert-info text-center py-5">
+                <i class="bi bi-inbox" style="font-size: 3rem; color: #999; display: block; margin-bottom: 1rem;"></i>
+                <h5>No Jobs Found</h5>
+                <p class="text-muted mb-0">
+                    {% if search or job_type %}
+                    Try adjusting your search filters or check back later for more opportunities.
+                    {% else %}
+                    No verified job postings available at the moment. Check back soon!
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if jobs.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if jobs.has_prev %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('student.jobs', page=1, job_type=job_type, search=search) }}">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('student.jobs', page=jobs.prev_num, job_type=job_type, search=search) }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for page_num in jobs.iter_pages(left_edge=1, left_margin=1, right_margin=1, right_edge=1) %}
+            {% if page_num %}
+            {% if page_num == jobs.page %}
+            <li class="page-item active">
+                <span class="page-link">{{ page_num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('student.jobs', page=page_num, job_type=job_type, search=search) }}">{{ page_num }}</a>
+            </li>
+            {% endif %}
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if jobs.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('student.jobs', page=jobs.next_num, job_type=job_type, search=search) }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('student.jobs', page=jobs.pages, job_type=job_type, search=search) }}">Last</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h2 class="text-primary">User Approvals</h2>
+<p>Approve or reject user registrations.</p>
+
+{% if pending_users and pending_users|length > 0 %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Photo</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Registered</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in pending_users %}
+        <tr>
+            <td class="text-center">
+                {% if user.profile_photo %}
+                <img src="{{ url_for('static', filename=user.profile_photo) }}" 
+                     alt="Profile Photo" class="rounded-circle" 
+                     style="width: 40px; height: 40px; object-fit: cover;">
+                {% else %}
+                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" 
+                     style="width: 40px; height: 40px; margin: 0 auto;">
+                    <i class="bi bi-person-fill" style="font-size: 1.2rem; color: #ccc;"></i>
+                </div>
+                {% endif %}
+            </td>
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role.value }}</td>
+            <td>{{ user.created_at | datetime }}</td>
+            <td>
+                <a href="{{ url_for('admin.view_approval_user', user_id=user.id) }}" class="btn btn-sm btn-info">View</a>
+                <form action="{{ url_for('admin.approve_user', user_id=user.id) }}" method="post"
+                    style="display:inline">
+                    <button class="btn btn-sm btn-success" type="submit">Approve</button>
+                </form>
+                <form action="{{ url_for('admin.reject_user', user_id=user.id) }}" method="post"
+                    style="display:inline;margin-left:8px">
+                    <button class="btn btn-sm btn-danger" type="submit">Reject</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info">No user registrations pending approval.</div>
+{% endif %}
+{% endblock %}

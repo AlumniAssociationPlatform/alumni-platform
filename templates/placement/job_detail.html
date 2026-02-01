@@ -1,0 +1,77 @@
+{% extends "placement/base.html" %}
+
+{% block title %}Job Detail - {{ job.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h3>{{ job.title }}</h3>
+            <p class="text-muted mb-1">{{ job.company }}{% if job.location %} • {{ job.location }}{% endif %}</p>
+            <p class="small text-muted">Posted on: {{ job.created_at.strftime('%Y-%m-%d') if job.created_at else '-' }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('placement.jobs_list_cell') }}" class="btn btn-outline-secondary">Back to Jobs</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Description</h6>
+                    <p>{{ job.description or '-' }}</p>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Type:</strong> {{ job.job_type or '-' }}</p>
+                            <p><strong>Eligibility:</strong> {{ job.eligibility or '-' }}</p>
+                            <p><strong>Department:</strong> {{ job.department or '-' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Location:</strong> {{ job.location or '-' }}</p>
+                            <p><strong>Salary Range:</strong> {{ job.salary_range or '-' }}</p>
+                            <p><strong>Application Deadline:</strong> {{ job.application_deadline if job.application_deadline else '-' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-subtitle mb-2 text-muted">Contact</h6>
+                    <p><strong>Email:</strong> {% if job.contact_email %}<a href="mailto:{{ job.contact_email }}">{{ job.contact_email }}</a>{% else %}-{% endif %}</p>
+                    <p><strong>Phone:</strong> {% if job.contact_phone %}<a href="tel:{{ job.contact_phone }}">{{ job.contact_phone }}</a>{% else %}-{% endif %}</p>                    
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if job.banner_image %}
+                    <img src="{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}" alt="Banner" class="img-fluid mb-3">
+                    {% endif %}
+
+                    <p class="mb-0"><strong>Posted By:</strong></p>
+                    <p class="mb-1 text-muted">{{ job.poster.name if job.poster else '-' }}</p>
+
+                    <p class="mb-0"><strong>Status:</strong></p>
+                    <p>
+                        {% if job.is_active %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                        {% endif %}
+                    </p>
+
+                    <p class="mb-0"><strong>Verified:</strong></p>
+                    <p>{% if job.is_verified %}<span class="badge bg-info">Yes</span>{% else %}<span class="badge bg-warning">No</span>{% endif %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

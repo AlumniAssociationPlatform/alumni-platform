@@ -1,0 +1,44 @@
+{% extends "admin/base.html" %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="text-primary">Manage Announcements</h4>
+    <a href="{{ url_for('admin.create_announcement') }}" class="btn btn-primary">
+        + Create Announcement
+    </a>
+</div>
+
+<div class="row">
+    {% for announcement in announcements %}
+    <div class="col-md-4 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-body">
+                <h5 class="text-dark">{{ announcement.title }}</h5>
+
+                <p class="text-muted mb-2">
+                    <small>{{ announcement.created_at.strftime('%d %b %Y, %H:%M') }}</small>
+                </p>
+
+                <p class="card-text">
+                    {{ announcement.description[:120] }}
+                    {% if announcement.description|length > 120 %}...{% endif %}
+                </p>
+            </div>
+
+            <div class="card-footer bg-white d-flex justify-content-end gap-2">
+                <a href="{{ url_for('admin.edit_announcement', announcement_id=announcement.id) }}"
+                    class="btn btn-sm btn-warning">Edit</a>
+
+                <form method="POST" action="{{ url_for('admin.delete_announcement', announcement_id=announcement.id) }}"
+                    onsubmit="return confirm('Delete this announcement?')">
+                    <button class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <p class="text-muted">No announcements created yet.</p>
+    {% endfor %}
+</div>
+
+{% endblock %}

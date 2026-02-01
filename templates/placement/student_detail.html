@@ -1,0 +1,79 @@
+{% extends "placement/base.html" %}
+
+{% block title %}Student Detail - {{ user.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h3>{{ user.name }}</h3>
+            <p class="text-muted">Student ID: {{ student.student_id }}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{{ url_for('placement.view_students') }}" class="btn btn-outline-secondary">Back to Students</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Name:</strong> {{ user.name }}</p>
+                            <p><strong>Email:</strong> <a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+                            <p><strong>Department:</strong> {{ student.department.replace('_', ' ').title() if student.department else '-' }}</p>
+                            <p><strong>Batch Year:</strong> {{ student.batch_year or '-' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Phone:</strong> {% if student.phone_number %}<a href="tel:{{ student.phone_number }}">{{ student.phone_number }}</a>{% else %}-{% endif %}</p>
+                            <p><strong>LinkedIn:</strong> {% if student.linkedin_profile %}{% set _link = student.linkedin_profile %}<a href="{{ _link if _link.startswith('http') else 'https://' + _link }}" target="_blank">Profile</a>{% else %}-{% endif %}</p>
+                            <p><strong>Skills:</strong> {{ student.skills or '-' }}</p>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h6>Recommendations</h6>
+                    {% if recommendations %}
+                        <ul>
+                            {% for r in recommendations %}
+                            <li>{{ r.recommendation_text[:150] }}{% if r.recommendation_text|length > 150 %}...{% endif %} <small class="text-muted">(for {{ r.job.title if r.job else 'Job' }})</small></li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">-</p>
+                    {% endif %}
+
+                    <h6 class="mt-3">Applications</h6>
+                    {% if applications %}
+                        <ul>
+                            {% for a in applications %}
+                            <li>{{ a.job.title if a.job else 'Job' }} — <span class="text-muted">{{ a.status }}</span></li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="text-muted">-</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    {% if user.profile_photo %}
+                    <img src="{{ url_for('static', filename=user.profile_photo) }}" alt="{{ user.name }}" class="rounded-circle mb-3" style="width:120px;height:120px;object-fit:cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center mb-3" style="width:120px;height:120px;color:white;font-size:36px;">{{ user.name[0].upper() }}</div>
+                    {% endif %}
+                    <p class="mb-1"><strong>{{ user.name }}</strong></p>
+                    <p class="text-muted mb-1">{{ user.email }}</p>
+                    <div class="mt-2">
+                        <a href="mailto:{{ user.email }}" class="btn btn-sm btn-outline-primary">Email</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

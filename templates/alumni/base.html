@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Alumni Dashboard | Alumni Portal</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Toastr Notifications -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <!-- Bootstrap Override CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-override.css') }}">
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <nav class="navbar navbar-dark fixed-top admin-header">
+        <div class="container-fluid">
+            <span class="navbar-brand fw-bold">
+                🎓 Alumni Portal – Alumni
+            </span>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    {% if current_user.profile_photo %}
+                    <img src="{{ url_for('static', filename=current_user.profile_photo) }}" 
+                         alt="Profile Photo" class="rounded-circle" style="width: 35px; height: 35px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" 
+                         style="width: 35px; height: 35px; color: white; font-weight: bold;">
+                        {{ current_user.name[0].upper() }}
+                    </div>
+                    {% endif %}
+                    <span class="navbar-brand-sub">
+                        Welcome, {{ current_user.name }}
+                    </span>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary btn-sm">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- SIDEBAR -->
+    <div class="admin-container">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+
+                <li>
+                    <a href="{{ url_for('alumni.dashboard') }}"
+                       class="{% if request.endpoint == 'alumni.dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+
+                <li class="menu-title">Profile</li>
+
+                <li>
+                    <a href="{{ url_for('alumni.profile') }}"
+                       class="{% if request.endpoint == 'alumni.profile' %}active{% endif %}">
+                        <i class="bi bi-person"></i> My Profile
+                    </a>
+                </li>
+
+                <li class="menu-title">Engagement</li>
+
+                <li>
+                    <a href="{{ url_for('alumni.announcements') }}"
+                       class="{% if request.endpoint == 'alumni.announcements' %}active{% endif %}">
+                        <i class="bi bi-megaphone"></i> Announcements
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('alumni.jobs') }}"
+                       class="{% if request.endpoint == 'alumni.jobs' or request.endpoint == 'placement.jobs_list' %}active{% endif %}">
+                        <i class="bi bi-briefcase"></i> Jobs & Internships
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('alumni.guidance') }}"
+                       class="{% if request.endpoint == 'alumni.guidance' %}active{% endif %}">
+                        <i class="bi bi-chat-dots"></i> Guide Students
+                    </a>
+                </li>
+
+                <li class="menu-title">Directory</li>
+
+                <li>
+                    <a href="{{ url_for('alumni.students_list') }}"
+                       class="{% if request.endpoint == 'alumni.students_list' %}active{% endif %}">
+                        <i class="bi bi-people"></i> Students
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('alumni.faculty_list') }}"
+                       class="{% if request.endpoint == 'alumni.faculty_list' %}active{% endif %}">
+                        <i class="bi bi-person-badge"></i> Faculty
+                    </a>
+                </li>
+
+                <!-- <li>
+                    <a href="{{ url_for('alumni.events') }}">
+                        <i class="bi bi-calendar-event"></i> Events
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('alumni.experience') }}">
+                        <i class="bi bi-journal-text"></i> Share Experience
+                    </a>
+                </li> -->
+
+            </ul>
+        </aside>
+
+        <main class="content">
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- jQuery (required for Toastr) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <!-- Custom Notifications Script -->
+    <script src="{{ url_for('static', filename='js/toastr_notification.js') }}"></script>
+
+</body>
+
+</html>

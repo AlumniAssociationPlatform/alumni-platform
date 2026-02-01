@@ -1,0 +1,275 @@
+{% extends "faculty/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Seminars & Guest Lectures</h2>
+            <p class="text-muted">Organize seminars and guest lectures for your department</p>
+        </div>
+    </div>
+
+    <!-- Seminar Form -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Schedule New Seminar</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('faculty.seminars') }}">
+                        <div class="mb-3">
+                            <label for="seminarTitle" class="form-label">Seminar Title *</label>
+                            <input type="text" class="form-control" id="seminarTitle" name="title" 
+                                   placeholder="e.g., Latest Trends in AI and Machine Learning" required>
+                            <small class="text-muted">Enter an engaging and descriptive title</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="speakerName" class="form-label">Speaker Name *</label>
+                                <input type="text" class="form-control" id="speakerName" name="speaker_name" 
+                                       placeholder="e.g., Dr. John Doe" required>
+                                <small class="text-muted">Full name of the guest speaker/alumnus</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="topic" class="form-label">Topic/Subject *</label>
+                                <input type="text" class="form-control" id="topic" name="topic" 
+                                       placeholder="e.g., Artificial Intelligence" required>
+                                <small class="text-muted">Main topic of the seminar</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="seminarDate" class="form-label">Date *</label>
+                                <input type="date" class="form-control" id="seminarDate" name="date" required>
+                                <small class="text-muted">Must be today or in the future</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="seminarTime" class="form-label">Time *</label>
+                                <input type="time" class="form-control" id="seminarTime" name="time" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location *</label>
+                            <input type="text" class="form-control" id="location" name="location" 
+                                   placeholder="e.g., Lecture Hall A or Conference Room B" required>
+                            <small class="text-muted">Venue where the seminar will be held</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="seminarDescription" class="form-label">Description *</label>
+                            <textarea class="form-control" id="seminarDescription" name="description" 
+                                      rows="5" placeholder="Provide a detailed description of the seminar content, key topics, and learning objectives..." required></textarea>
+                            <small class="text-muted">Include agenda, topics, and expected outcomes</small>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-calendar-check"></i> Schedule Seminar
+                            </button>
+                            <a href="{{ url_for('faculty.dashboard') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Sidebar -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="mb-3">Why Organize Seminars?</h6>
+                    <ul class="small text-muted">
+                        <li>✓ Enhance student learning beyond curriculum</li>
+                        <li>✓ Bridge gap between academics and industry</li>
+                        <li>✓ Provide career guidance and insights</li>
+                        <li>✓ Build industry connections</li>
+                        <li>✓ Motivate and inspire students</li>
+                        <li>✓ Strengthen alumni network</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3">
+                        <i class="bi bi-info-circle text-info"></i> Department
+                    </h6>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary">{{ department }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Best Practices Card -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3">
+                        <i class="bi bi-lightbulb text-warning"></i> Best Practices for Seminars
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="small">Before the Seminar:</h6>
+                            <ul class="small">
+                                <li>• Give ample notice to students (2+ weeks)</li>
+                                <li>• Promote through posters and announcements</li>
+                                <li>• Arrange venue and technical setup</li>
+                                <li>• Brief the speaker about audience</li>
+                                <li>• Send reminder notifications</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="small">During & After the Seminar:</h6>
+                            <ul class="small">
+                                <li>• Start on time with proper introduction</li>
+                                <li>• Allow Q&A session</li>
+                                <li>• Facilitate networking opportunities</li>
+                                <li>• Take photos and feedback</li>
+                                <li>• Thank the speaker formally</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scheduled Seminars Section -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-calendar2-event"></i> Scheduled Seminars
+                        {% if seminars %}<span class="badge bg-primary ms-2">{{ seminars|length }}</span>{% endif %}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if seminars %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Speaker</th>
+                                        <th>Topic</th>
+                                        <th>Date & Time</th>
+                                        <th>Location</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for seminar in seminars %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ seminar.title }}</strong>
+                                        </td>
+                                        <td>{{ seminar.speaker_name }}</td>
+                                        <td>
+                                            <span class="badge bg-light text-dark">{{ seminar.topic }}</span>
+                                        </td>
+                                        <td>
+                                            <small>{{ seminar.date.strftime('%d %b %Y, %I:%M %p') }}</small>
+                                        </td>
+                                        <td>{{ seminar.location }}</td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#seminarModal{{ seminar.id }}">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <form method="POST" action="{{ url_for('faculty.delete_seminar', seminar_id=seminar.id) }}" style="display:inline;">
+                                                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Are you sure you want to delete this seminar?');">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Seminar Details Modal -->
+                                    <div class="modal fade" id="seminarModal{{ seminar.id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">{{ seminar.title }}</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p><strong>Speaker:</strong> {{ seminar.speaker_name }}</p>
+                                                    <p><strong>Topic:</strong> {{ seminar.topic }}</p>
+                                                    <p><strong>Date & Time:</strong> {{ seminar.date.strftime('%d %B %Y, %I:%M %p') }}</p>
+                                                    <p><strong>Location:</strong> {{ seminar.location }}</p>
+                                                    <p><strong>Department:</strong> {{ seminar.department }}</p>
+                                                    <hr>
+                                                    <h6>Description:</h6>
+                                                    <p>{{ seminar.description }}</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle"></i>
+                            Currently, no seminars are scheduled. Start by organizing the first seminar for your department!
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set minimum date to today to prevent selecting past dates
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('seminarDate');
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        const minDate = `${yyyy}-${mm}-${dd}`;
+        
+        dateInput.setAttribute('min', minDate);
+        dateInput.value = minDate; // Set default to today
+        
+        // Validate on form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const dateValue = dateInput.value;
+            const timeValue = document.getElementById('seminarTime').value;
+            
+            if (!dateValue || !timeValue) {
+                e.preventDefault();
+                alert('Please select both date and time.');
+                return false;
+            }
+            
+            const selectedDateTime = new Date(`${dateValue}T${timeValue}`);
+            const now = new Date();
+            
+            if (selectedDateTime < now) {
+                e.preventDefault();
+                alert('Seminar date and time must be in the future. Please select today or a later date.');
+                return false;
+            }
+        });
+    });
+</script>
+{% endblock %}

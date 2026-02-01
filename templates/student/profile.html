@@ -1,0 +1,305 @@
+{% extends "student/base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Page Title -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold text-primary mb-2">My Profile</h2>
+            <p class="text-muted">View and manage your profile information</p>
+        </div>
+    </div>
+
+    <!-- Alert Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show"
+        role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Profile Information Card + Profile Status -->
+    <div class="row">
+        <!-- Profile Information (Left) -->
+        <div class="col-12 col-lg-8">
+            <div class="card shadow-sm mb-4 profile-card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-person-circle"></i> Profile Information
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('student.edit_profile') }}" class="btn btn-primary btn-sm">
+                                <i class="bi bi-pencil-square"></i> Edit Profile
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Personal Information -->
+                    <div class="section-box mb-4">
+                        <h6 class="section-title">Personal Information</h6>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="profile-field">
+                                    <label class="field-label text-muted small">Full Name</label>
+                                    <p class="field-value fw-500">{{ current_user.name }}</p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="profile-field">
+                                    <label class="field-label text-muted small">Email Address</label>
+                                    <p class="field-value fw-500">{{ current_user.email }}</p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="profile-field">
+                                    <label class="field-label text-muted small">Phone Number</label>
+                                    <p class="field-value fw-500">
+                                        {% if student and student.phone_number %}
+                                        {{ student.phone_number }}
+                                        {% else %}
+                                        <span class="text-muted">Not provided</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="profile-field">
+                                    <label class="field-label text-muted small">LinkedIn Profile</label>
+                                    <p class="field-value fw-500">
+                                        {% if student and student.linkedin_profile %}
+                                        <a href="{{ student.linkedin_profile }}" target="_blank" class="text-primary">
+                                            <i class="bi bi-linkedin"></i> View Profile
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted">Not provided</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Status Card (Right) -->
+        <div class="col-12 col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-shield-check"></i> Profile Status
+                        </h5>
+                        <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#editPhotoModal">
+                            <i class="bi bi-image"></i> Edit Photo
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card-body text-center">
+                    <div class="profile-avatar mb-3">
+                        {% if current_user.profile_photo %}
+                        <img src="{{ url_for('static', filename=current_user.profile_photo) }}" alt="Profile Photo"
+                            class="rounded-circle img-fluid" style="width: 100px; height: 100px; object-fit: cover;">
+                        {% else %}
+                        <div class="rounded-circle bg-warning d-flex align-items-center justify-content-center mx-auto"
+                            style="width: 100px; height: 100px;">
+                            <i class="bi bi-person-fill" style="font-size: 3rem; color: white;"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <h6 class="mb-2">{{ current_user.name }}</h6>
+                    <p class="text-muted small">Student</p>
+
+                    <div class="status-badge mb-3">
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle"></i> Profile Active
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Info - Below Both -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle"></i> Profile Info
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">
+                        <i class="bi bi-shield-check"></i> Your profile information is secure and only visible to you
+                        and the institution.
+                    </p>
+                    <p class="text-muted small">
+                        <i class="bi bi-clock"></i> Member since <strong>{{ current_user.created_at.strftime('%B %d,
+                            %Y') if current_user.created_at else 'Recently' }}</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Photo Modal -->
+<div class="modal fade" id="editPhotoModal" tabindex="-1" aria-labelledby="editPhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPhotoModalLabel">
+                    <i class="bi bi-image"></i> Update Profile Photo
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Photo Preview -->
+                <div class="text-center mb-3">
+                    {% if current_user.profile_photo %}
+                    <img id="photoPreview" src="{{ url_for('static', filename=current_user.profile_photo) }}"
+                        alt="Profile Photo" class="rounded-circle img-fluid"
+                        style="width: 120px; height: 120px; object-fit: cover;">
+                    {% else %}
+                    <div id="photoPreview"
+                        class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto"
+                        style="width: 120px; height: 120px;">
+                        <i class="bi bi-person-fill" style="font-size: 3rem; color: #ccc;"></i>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- File Input -->
+                <div class="form-group">
+                    <label for="photoFileInput" class="form-label">Choose Photo</label>
+                    <input type="file" class="form-control" id="photoFileInput" accept=".png,.jpg,.jpeg,.webp">
+                    <small class="form-text text-muted d-block mt-2">
+                        Allowed formats: PNG, JPG, JPEG, WEBP (Max 1 MB)
+                    </small>
+                </div>
+
+                <!-- Upload Feedback -->
+                <div id="photoUploadFeedback" class="mt-3"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="uploadPhotoBtn" disabled>
+                    <i class="bi bi-cloud-upload"></i> Upload Photo
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toastr JS for notifications -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+    document.getElementById('photoFileInput').addEventListener('change', function () {
+        const uploadBtn = document.getElementById('uploadPhotoBtn');
+        const file = this.files[0];
+
+        if (file) {
+            // Validate file type
+            const validFormats = ['image/png', 'image/jpeg', 'image/webp'];
+            if (!validFormats.includes(file.type)) {
+                const feedback = document.getElementById('photoUploadFeedback');
+                feedback.innerHTML = '<div class="alert alert-danger small mb-0"><i class="bi bi-exclamation-circle"></i> Only PNG, JPG, JPEG, and WEBP formats allowed</div>';
+                uploadBtn.disabled = true;
+                return;
+            }
+
+            // Validate file size (1 MB)
+            if (file.size > 1 * 1024 * 1024) {
+                const feedback = document.getElementById('photoUploadFeedback');
+                feedback.innerHTML = '<div class="alert alert-danger small mb-0"><i class="bi bi-exclamation-circle"></i> File size must be less than 1 MB</div>';
+                uploadBtn.disabled = true;
+                return;
+            }
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const preview = document.getElementById('photoPreview');
+                if (preview.tagName === 'IMG') {
+                    preview.src = e.target.result;
+                } else {
+                    // Replace placeholder with image
+                    const img = document.createElement('img');
+                    img.id = 'photoPreview';
+                    img.src = e.target.result;
+                    img.className = 'rounded-circle img-fluid';
+                    img.style = 'width: 120px; height: 120px; object-fit: cover;';
+                    preview.parentElement.replaceChild(img, preview);
+                }
+            };
+            reader.readAsDataURL(file);
+
+            // Clear feedback and enable button
+            document.getElementById('photoUploadFeedback').innerHTML = '';
+            uploadBtn.disabled = false;
+        } else {
+            uploadBtn.disabled = true;
+        }
+    });
+
+    document.getElementById('uploadPhotoBtn').addEventListener('click', function () {
+        const fileInput = document.getElementById('photoFileInput');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            toastr.error('Please select a file first');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('profile_photo', file);
+
+        this.disabled = true;
+        const originalText = this.innerHTML;
+        this.innerHTML = '<i class="bi bi-hourglass-split"></i> Uploading...';
+
+        fetch('{{ url_for("auth.update_profile_photo") }}', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    toastr.success(data.message);
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    toastr.error(data.message || 'Upload failed');
+                    this.disabled = false;
+                    this.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('An error occurred during upload');
+                this.disabled = false;
+                this.innerHTML = originalText;
+            });
+    });
+</script>
+
+{% endblock %}

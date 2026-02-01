@@ -1,0 +1,204 @@
+{% extends "student/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Back Button & Header -->
+    <div class="mb-4">
+        <a href="{{ url_for('student.seminars') }}" class="btn btn-outline-secondary mb-3">
+            <i class="bi bi-arrow-left"></i> Back to Seminars
+        </a>
+        
+        <h2>{{ seminar.title }}</h2>
+        <p class="text-muted">{{ seminar.topic }}</p>
+    </div>
+
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Left Column - Main Details -->
+        <div class="col-md-8">
+            <!-- Seminar Info Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <!-- Speaker Section -->
+                    <div class="mb-4">
+                        <h5 class="card-title mb-3">Speaker</h5>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-placeholder bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                <i class="bi bi-person-fill fs-4"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">{{ seminar.speaker_name }}</h6>
+                                <small class="text-muted">{{ seminar.topic }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Date & Time -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Date</h6>
+                            <p class="mb-0">
+                                <i class="bi bi-calendar-event text-primary"></i>
+                                {{ seminar.date.strftime('%A, %d %B %Y') }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">Time</h6>
+                            <p class="mb-0">
+                                <i class="bi bi-clock text-primary"></i>
+                                {{ seminar.date.strftime('%I:%M %p') }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="mb-4">
+                        <h6 class="text-muted">Location</h6>
+                        <p class="mb-0">
+                            <i class="bi bi-geo-alt text-primary"></i>
+                            {{ seminar.location }}
+                        </p>
+                    </div>
+
+                    <!-- Department -->
+                    <div class="mb-4">
+                        <h6 class="text-muted">Department</h6>
+                        <p class="mb-0">
+                            <span class="badge bg-light text-dark">{{ seminar.department }}</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">About This Seminar</h5>
+                    <p class="card-text" style="line-height: 1.8; color: #555;">
+                        {{ seminar.description }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Key Information Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Important Information</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong>Register Early:</strong> Limited seats available
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong>Attendance:</strong> Certificate of attendance provided
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong>Q&A Session:</strong> Opportunity to interact with the speaker
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                            <strong>Networking:</strong> Connect with fellow students and professionals
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Sidebar -->
+        <div class="col-md-4">
+            <!-- Quick Summary Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Seminar Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted d-block">TOPIC</small>
+                        <p class="mb-0">{{ seminar.topic }}</p>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">SPEAKER</small>
+                        <p class="mb-0">{{ seminar.speaker_name }}</p>
+                    </div>
+                    <hr>
+                    <div class="mb-3">
+                        <small class="text-muted d-block">DATE & TIME</small>
+                        <p class="mb-0">{{ seminar.date.strftime('%d %b %Y, %I:%M %p') }}</p>
+                    </div>
+                    <hr>
+                    <div>
+                        <small class="text-muted d-block">LOCATION</small>
+                        <p class="mb-0">{{ seminar.location }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <button class="btn btn-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        <i class="bi bi-bookmark-check"></i> Add to Calendar
+                    </button>
+                    <button class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-share"></i> Share
+                    </button>
+                </div>
+            </div>
+
+            <!-- Organized By Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Organized By</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="avatar-placeholder bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 50px; height: 50px;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">{{ seminar.faculty.user.name }}</h6>
+                            <small class="text-muted">Faculty</small>
+                        </div>
+                    </div>
+                    <p class="small text-muted mb-0">{{ seminar.department }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Register Modal -->
+<div class="modal fade" id="registerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add to Your Calendar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>This seminar has been added to your calendar. You will receive a reminder 24 hours before the event.</p>
+                <div class="alert alert-info">
+                    <strong>{{ seminar.title }}</strong><br>
+                    {{ seminar.date.strftime('%A, %d %B %Y at %I:%M %p') }}<br>
+                    {{ seminar.location }}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Got It!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-placeholder {
+        flex-shrink: 0;
+    }
+</style>
+{% endblock %}

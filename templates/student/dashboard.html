@@ -1,0 +1,176 @@
+{% extends "student/base.html" %}
+
+{% block title %}Dashboard | Student - Alumni Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-house-fill"></i> Welcome, {{ current_user.name }}!</h1>
+    <p>Your student dashboard - manage your profile, explore opportunities, and connect with alumni</p>
+</div>
+
+<div class="container-fluid">
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">My Profile</h5>
+                    <p class="card-text">
+                        <i class="bi bi-person-circle" style="font-size: 2rem; color: #c41e3a;"></i>
+                    </p>
+                    <a href="{{ url_for('student.profile') }}" class="btn btn-sm btn-outline-primary">View Profile</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Active Jobs</h5>
+                    <p class="card-text">
+                        <i class="bi bi-briefcase-fill" style="font-size: 2rem; color: #c41e3a;"></i>
+                    </p>
+                    <a href="{{ url_for('student.jobs') }}" class="btn btn-sm btn-outline-primary">Browse Jobs</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Upcoming Events</h5>
+                    <p class="card-text">
+                        <i class="bi bi-calendar-check-fill" style="font-size: 2rem; color: #c41e3a;"></i>
+                    </p>
+                    <a href="{{ url_for('student.events') }}" class="btn btn-sm btn-outline-primary">View Events</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-muted">Guidance</h5>
+                    <p class="card-text">
+                        <i class="bi bi-chat-quote" style="font-size: 2rem; color: #c41e3a;"></i>
+                    </p>
+                    <a href="{{ url_for('student.guidance') }}" class="btn btn-sm btn-outline-primary">Get Help</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Announcements -->
+        <div class="col-lg-8 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient border-0">
+                    <h5 class="mb-0"><i class="bi bi-megaphone-fill"></i> Latest Announcements</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_announcements %}
+                        {% for announcement in recent_announcements %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <h6 class="text-dark fw-bold">{{ announcement.title }}</h6>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-calendar"></i> {{ announcement.created_at.strftime('%d %B %Y') }}
+                            </p>
+                            <p class="mb-2">{{ announcement.description[:150] }}{% if announcement.description|length > 150 %}...{% endif %}</p>
+                            <a href="{{ url_for('student.announcements') }}" class="text-primary small">Read more →</a>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">No announcements yet</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light border-0">
+                    <a href="{{ url_for('student.announcements') }}" class="btn btn-sm btn-primary w-100">
+                        <i class="bi bi-arrow-right"></i> View All Announcements
+                    </a>
+                </div>
+            </div>
+
+            <!-- Upcoming Seminars -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-gradient border-0">
+                    <h5 class="mb-0"><i class="bi bi-calendar2-event"></i> Upcoming Seminars & Lectures</h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_seminars %}
+                        {% for seminar in upcoming_seminars %}
+                        <div class="border-bottom pb-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="text-dark fw-bold mb-1">{{ seminar.title }}</h6>
+                                    <p class="text-muted small mb-2">
+                                        <i class="bi bi-person-circle"></i> {{ seminar.speaker_name }}
+                                        <span class="ms-2"><i class="bi bi-tag"></i> {{ seminar.topic }}</span>
+                                    </p>
+                                    <p class="text-muted small mb-2">
+                                        <i class="bi bi-calendar-event"></i> {{ seminar.date.strftime('%d %B %Y, %I:%M %p') }}
+                                    </p>
+                                    <p class="text-muted small mb-2">
+                                        <i class="bi bi-geo-alt"></i> {{ seminar.location }}
+                                    </p>
+                                    <p class="mb-0 small">{{ seminar.description[:100] }}{% if seminar.description|length > 100 %}...{% endif %}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center py-3">No upcoming seminars scheduled for your department</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-light border-0">
+                    <a href="{{ url_for('student.seminars') }}" class="btn btn-sm btn-primary w-100">
+                        <i class="bi bi-arrow-right"></i> View All Seminars
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient border-0">
+                    <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a href="{{ url_for('student.edit_profile') }}" class="list-group-item list-group-item-action border-0">
+                            <i class="bi bi-pencil-square"></i> Update Your Profile
+                        </a>
+                        <a href="{{ url_for('student.jobs') }}" class="list-group-item list-group-item-action border-0">
+                            <i class="bi bi-briefcase"></i> Explore Job Opportunities
+                        </a>
+                        <a href="{{ url_for('student.alumni_list') }}" class="list-group-item list-group-item-action border-0">
+                            <i class="bi bi-people"></i> Connect with Alumni
+                        </a>
+                        <a href="{{ url_for('student.events') }}" class="list-group-item list-group-item-action border-0">
+                            <i class="bi bi-calendar-event"></i> Attend Events
+                        </a>
+                        <a href="{{ url_for('student.guidance') }}" class="list-group-item list-group-item-action border-0">
+                            <i class="bi bi-chat-dots"></i> Ask for Guidance
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="card border-0 shadow-sm mt-4">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Pro Tips</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small text-muted ps-3">
+                        <li class="mb-2">Complete your profile to stand out to alumni and employers</li>
+                        <li class="mb-2">Add your LinkedIn and phone number for better networking</li>
+                        <li class="mb-2">Regularly check for new job and internship opportunities</li>
+                        <li>Participate in events to expand your network</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

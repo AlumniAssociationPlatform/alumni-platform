@@ -1,0 +1,211 @@
+{% extends "faculty/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Placement Coordination</h2>
+            <p class="text-muted">Coordinate placement activities with placement cell and support student job opportunities</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Active Jobs/Internships</h6>
+                    <h3>{{ jobs|length }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Students Ready for Placement</h6>
+                    <h3>{{ students_count }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Department</h6>
+                    <h5 class="mb-0">{{ department }}</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Job Opportunities -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Active Job & Internship Opportunities</h6>
+                </div>
+                <div class="card-body">
+                    {% if jobs %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Job Title</th>
+                                        <th>Position Type</th>
+                                        <th>Required Skills</th>
+                                        <th>Salary/Stipend</th>
+                                        <th>Deadline</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for job in jobs %}
+                                    <tr>
+                                        <td><strong>{{ job.company }}</strong></td>
+                                        <td>{{ job.title }}</td>
+                                        <td>
+                                            {% if job.job_type == 'Internship' %}
+                                                <span class="badge bg-info">Internship</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Full Time</span>
+                                            {% endif %}
+                                        </td>
+                                        <td><small>{{ job.eligibility or 'N/A' }}</small></td>
+                                        <td>
+                                            {% if job.salary_range %}
+                                                {{ job.salary_range }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ job.application_deadline or 'N/A' }}</td>
+                                        <td>
+                                            <span class="badge {% if job.is_active %}bg-success{% else %}bg-danger{% endif %}">{{ 'Active' if job.is_active else 'Inactive' }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-outline-primary" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info" role="alert">
+                            <i class="bi bi-info-circle"></i>
+                            No active job opportunities currently. Check back later!
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Placement Responsibilities -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Your Placement Responsibilities</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Identify Candidates:</strong> Identify and recommend suitable students
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Skill Assessment:</strong> Assess student readiness for opportunities
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Interview Preparation:</strong> Guide students on interview skills
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Industry Coordination:</strong> Liaise with companies and placement cell
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Documentation:</strong> Ensure proper documentation of placements
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Follow-up:</strong> Track student placements and outcomes
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Placement Support Activities</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="bi bi-briefcase text-primary"></i>
+                            <strong>Job Fair Coordination:</strong> Organize campus visits and job fairs
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-briefcase text-primary"></i>
+                            <strong>Mock Interviews:</strong> Conduct mock interview sessions
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-briefcase text-primary"></i>
+                            <strong>Resume Review:</strong> Help improve student resumes
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-briefcase text-primary"></i>
+                            <strong>Seminars/Workshops:</strong> Organize placement related sessions
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-briefcase text-primary"></i>
+                            <strong>Alumni Guest Lectures:</strong> Invite alumni to share experiences
+                        </li>
+                        <li>
+                            <i class="bi bi-briefcase text-primary"></i>
+                            <strong>Feedback Sessions:</strong> Conduct post-placement feedback
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Links -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Quick Links</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2 d-sm-flex">
+                        <a href="{{ url_for('faculty.recommendations') }}" class="btn btn-primary flex-fill">
+                            <i class="bi bi-award"></i> Recommend Students
+                        </a>
+                        <a href="{{ url_for('faculty.students') }}" class="btn btn-info flex-fill">
+                            <i class="bi bi-people"></i> View Students
+                        </a>
+                        <a href="{{ url_for('faculty.seminars') }}" class="btn btn-warning flex-fill">
+                            <i class="bi bi-easel"></i> Organize Seminars
+                        </a>
+                        <a href="{{ url_for('faculty.guidance') }}" class="btn btn-secondary flex-fill">
+                            <i class="bi bi-chat-left-text"></i> Guide Students
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

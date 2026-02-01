@@ -1,0 +1,163 @@
+{% extends "faculty/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Student Guidance & Alumni Interaction</h2>
+            <p class="text-muted">Guide students and facilitate alumni mentorship</p>
+        </div>
+    </div>
+
+    <!-- Guidance Form -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Provide Student Guidance</h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('faculty.guidance') }}">
+                        <div class="mb-3">
+                            <label for="studentSelect" class="form-label">Select Student *</label>
+                            <select class="form-select" id="studentSelect" name="student_id" required>
+                                <option value="">-- Choose a student --</option>
+                                {% for student in students_list %}
+                                <option value="{{ student.id }}">
+                                    {{ student.user.name }} ({{ student.student_id }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Select a student from your department</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="guidanceType" class="form-label">Guidance Type *</label>
+                            <select class="form-select" id="guidanceType" name="guidance_type" required>
+                                <option value="">-- Select guidance type --</option>
+                                <option value="career">Career Planning & Development</option>
+                                <option value="academic">Academic Guidance</option>
+                                <option value="skill">Skill Development</option>
+                                <option value="placement">Placement Preparation</option>
+                                <option value="project">Project & Research Guidance</option>
+                                <option value="personal">Personal Development</option>
+                                <option value="alumni_mentorship">Alumni Mentorship Connection</option>
+                                <option value="internship">Internship Guidance</option>
+                            </select>
+                            <small class="text-muted">Select the type of guidance being provided</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="guidanceNotes" class="form-label">Guidance Notes *</label>
+                            <textarea class="form-control" id="guidanceNotes" name="guidance_notes" 
+                                      rows="5" placeholder="Provide detailed guidance, suggestions, and recommendations for student development..." required></textarea>
+                            <small class="text-muted">Provide detailed guidance notes, suggestions, and action items</small>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle"></i> Save Guidance
+                            </button>
+                            <a href="{{ url_for('faculty.students') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Information Sidebar -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <h6 class="mb-3">Guidance Areas</h6>
+                    <ul class="small text-muted">
+                        <li><strong>Career:</strong> Future path, skill gaps</li>
+                        <li><strong>Academic:</strong> Subject knowledge, grades</li>
+                        <li><strong>Skills:</strong> Technical & soft skills</li>
+                        <li><strong>Placement:</strong> Job readiness, interviews</li>
+                        <li><strong>Project:</strong> Research & projects</li>
+                        <li><strong>Alumni:</strong> Mentor connections</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3">
+                        <i class="bi bi-info-circle text-info"></i> Quick Stats
+                    </h6>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Students:</span>
+                        <strong>{{ students_list|length }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alumni Mentorship Section -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">Alumni Mentorship Programs</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        Connect your students with successful alumni mentors for career guidance and industry insights.
+                    </p>
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-lightbulb"></i>
+                        <strong>Mentorship Benefits:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Real-world experience and insights</li>
+                            <li>Career trajectory guidance</li>
+                            <li>Industry connections and networking</li>
+                            <li>Personal and professional growth</li>
+                            <li>Increased placement opportunities</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Best Practices Card -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-3">
+                        <i class="bi bi-lightbulb text-warning"></i> Guidelines for Effective Guidance
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="small">Do's:</h6>
+                            <ul class="small">
+                                <li>✓ Listen actively to student concerns</li>
+                                <li>✓ Provide actionable advice</li>
+                                <li>✓ Share relevant experiences and examples</li>
+                                <li>✓ Track student progress</li>
+                                <li>✓ Regular follow-up sessions</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="small">Don'ts:</h6>
+                            <ul class="small">
+                                <li>✗ Don't be judgmental</li>
+                                <li>✗ Don't force decisions on students</li>
+                                <li>✗ Don't break confidentiality</li>
+                                <li>✗ Don't provide false promises</li>
+                                <li>✗ Don't neglect follow-up</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

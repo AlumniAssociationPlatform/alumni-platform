@@ -1,0 +1,259 @@
+{% extends "alumni/base.html" %}
+
+{% block content %}
+<div class="alumni-dashboard">
+    <!-- Welcome Header -->
+    <div class="dashboard-header">
+        <div class="header-content">
+            <div class="header-text">
+                <h1 class="dashboard-title">Welcome, {{ current_user.name }}! 👋</h1>
+                <p class="dashboard-subtitle">Make an impact by sharing your expertise and guiding the next generation
+                    of students</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Announcements Section -->
+    {% if recent_announcements %}
+    <div class="announcements-section" style="margin-bottom: 2rem;">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-light border-bottom d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-megaphone text-primary"></i> Recent Announcements
+                </h5>
+                <a href="{{ url_for('alumni.announcements') }}" class="btn btn-sm btn-outline-primary">
+                    View All
+                </a>
+            </div>
+            <div class="card-body">
+                {% for announcement in recent_announcements %}
+                <div class="alert alert-info mb-2 border-left border-primary" role="alert" style="padding: 0.75rem 1rem;">
+                    <h6 class="alert-heading mb-1" style="font-size: 0.95rem;">{{ announcement.title }}</h6>
+                    <p class="mb-1 small">{{ announcement.description[:100] }}{% if announcement.description|length > 100 %}...{% endif %}</p>
+                    <small class="text-muted">
+                        <i class="bi bi-calendar"></i> {{ announcement.created_at.strftime('%d %b %Y, %H:%M') }}
+                    </small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Stats Section -->
+    <div class="stats-section">
+        <a href="{{ url_for('alumni.profile') }}" class="stat-card">
+            <div class="stat-icon stat-icon-profile">
+                <i class="bi bi-person"></i>
+            </div>
+            <div class="stat-content">
+                <h5 class="stat-title">Profile</h5>
+                <p class="stat-description">Complete your profile</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('alumni.announcements') }}" class="stat-card">
+            <div class="stat-icon stat-icon-announcements">
+                <i class="bi bi-megaphone"></i>
+            </div>
+            <div class="stat-content">
+                <h5 class="stat-title">Announcements</h5>
+                <p class="stat-description">Stay updated</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('alumni.guidance') }}" class="stat-card">
+            <div class="stat-icon stat-icon-guidance">
+                <i class="bi bi-chat-dots"></i>
+            </div>
+            <div class="stat-content">
+                <h5 class="stat-title">Guidance Sessions</h5>
+                <p class="stat-description">Mentoring & coaching</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('alumni.jobs') }}" class="stat-card">
+            <div class="stat-icon stat-icon-jobs">
+                <i class="bi bi-briefcase"></i>
+            </div>
+            <div class="stat-content">
+                <h5 class="stat-title">Job Opportunities</h5>
+                <p class="stat-description">Browse & share jobs</p>
+            </div>
+        </a>
+
+        <a href="{{ url_for('alumni.events') }}" class="stat-card">
+            <div class="stat-icon stat-icon-events">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+            <div class="stat-content">
+                <h5 class="stat-title">Events</h5>
+                <p class="stat-description">Join & participate</p>
+            </div>
+        </a>
+    </div>
+
+    <!-- Main Features Grid -->
+    <div class="features-container">
+        <!-- Profile Card -->
+        <div class="feature-card profile-card">
+            <div class="card-header-featured">
+                <div class="card-icon">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+                <h3 class="text-dark">My Profile</h3>
+            </div>
+            <div class="card-body-featured">
+                <p class="card-description">View and update your professional profile, including your current role,
+                    company, and LinkedIn information.</p>
+                <ul class="feature-list">
+                    <li><i class="bi bi-check-circle"></i> Personal Information</li>
+                    <li><i class="bi bi-check-circle"></i> Professional Details</li>
+                    <li><i class="bi bi-check-circle"></i> Contact & Social Links</li>
+                </ul>
+            </div>
+            <div class="card-footer-featured">
+                <a href="{{ url_for('alumni.profile') }}" class="btn-card btn-card-primary">
+                    <span>View Profile</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Guidance Card -->
+        <div class="feature-card guidance-card">
+            <div class="card-header-featured">
+                <div class="card-icon">
+                    <i class="bi bi-chat-left-dots"></i>
+                </div>
+                <h3 class="text-dark">Guide Students</h3>
+            </div>
+            <div class="card-body-featured">
+                <p class="card-description">Share your knowledge by providing mentorship and guidance to current
+                    students on career development and life experiences.</p>
+                <ul class="feature-list">
+                    <li><i class="bi bi-check-circle"></i> Create Guidance Sessions</li>
+                    <li><i class="bi bi-check-circle"></i> Schedule Sessions</li>
+                    <li><i class="bi bi-check-circle"></i> Track Student Engagement</li>
+                </ul>
+            </div>
+            <div class="card-footer-featured">
+                <a href="{{ url_for('alumni.guidance') }}" class="btn-card btn-card-secondary">
+                    <span>Manage Guidance</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Jobs & Internships Card -->
+        <div class="feature-card jobs-card">
+            <div class="card-header-featured">
+                <div class="card-icon">
+                    <i class="bi bi-briefcase"></i>
+                </div>
+                <h3 class="text-dark">Jobs & Internships</h3>
+            </div>
+            <div class="card-body-featured">
+                <p class="card-description">Explore job opportunities, internships, and placements. Help students
+                    connect with career opportunities.</p>
+                <ul class="feature-list">
+                    <li><i class="bi bi-check-circle"></i> Browse Openings</li>
+                    <li><i class="bi bi-check-circle"></i> Post Opportunities</li>
+                    <li><i class="bi bi-check-circle"></i> Connect with Talent</li>
+                </ul>
+            </div>
+            <div class="card-footer-featured">
+                <a href="{{ url_for('alumni.jobs') }}" class="btn-card btn-card-tertiary">
+                    <span>Explore Jobs</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Events Card -->
+        <div class="feature-card events-card">
+            <div class="card-header-featured">
+                <div class="card-icon">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+                <h3 class="text-dark">Events & Webinars</h3>
+            </div>
+            <div class="card-body-featured">
+                <p class="card-description">Participate in alumni events, networking sessions, and webinars to stay
+                    connected with the community.</p>
+                <ul class="feature-list">
+                    <li><i class="bi bi-check-circle"></i> Upcoming Events</li>
+                    <li><i class="bi bi-check-circle"></i> Register Events</li>
+                    <li><i class="bi bi-check-circle"></i> Network with Peers</li>
+                </ul>
+            </div>
+            <div class="card-footer-featured">
+                <a href="{{ url_for('alumni.events') }}" class="btn-card btn-card-quaternary">
+                    <span>View Events</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Experience Sharing Card -->
+        <div class="feature-card experience-card">
+            <div class="card-header-featured">
+                <div class="card-icon">
+                    <i class="bi bi-journal-text"></i>
+                </div>
+                <h3 class="text-dark">Share Experience</h3>
+            </div>
+            <div class="card-body-featured">
+                <p class="card-description">Share your professional journey, success stories, and valuable insights with
+                    fellow alumni and students.</p>
+                <ul class="feature-list">
+                    <li><i class="bi bi-check-circle"></i> Write Articles</li>
+                    <li><i class="bi bi-check-circle"></i> Success Stories</li>
+                    <li><i class="bi bi-check-circle"></i> Career Insights</li>
+                </ul>
+            </div>
+            <div class="card-footer-featured">
+                <a href="{{ url_for('alumni.experience') }}" class="btn-card btn-card-quinary">
+                    <span>Share Now</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Edit Profile Card -->
+        <div class="feature-card edit-profile-card">
+            <div class="card-header-featured">
+                <div class="card-icon">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+                <h3 class="text-dark">Edit Profile</h3>
+            </div>
+            <div class="card-body-featured">
+                <p class="card-description">Update your professional information, current company, role, and other
+                    details to keep your profile current.</p>
+                <ul class="feature-list">
+                    <li><i class="bi bi-check-circle"></i> Basic Information</li>
+                    <li><i class="bi bi-check-circle"></i> Career Details</li>
+                    <li><i class="bi bi-check-circle"></i> Social Profiles</li>
+                </ul>
+            </div>
+            <div class="card-footer-featured">
+                <a href="{{ url_for('alumni.edit_profile') }}" class="btn-card btn-card-senary">
+                    <span>Edit Profile</span>
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action Section -->
+    <div class="cta-section">
+        <div class="cta-content">
+            <h3 class="cta-title">Ready to Make a Difference?</h3>
+            <p class="cta-description">Start by completing your profile and then explore ways to support current
+                students through mentorship, job opportunities, and events.</p>
+            <a href="{{ url_for('alumni.edit_profile') }}" class="btn-cta">Get Started</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

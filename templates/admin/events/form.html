@@ -1,0 +1,138 @@
+{% extends "admin/base.html" %}
+{% block content %}
+
+<div class="card shadow">
+    <div class="card-header">
+        <h5>{{ "Update Event" if event else "Create Event" }}</h5>
+    </div>
+
+    <div class="card-body">
+        <form method="POST" id="eventForm" enctype="multipart/form-data" novalidate>
+
+            <div class="mb-3">
+                <label class="form-label required">Event Title</label>
+                <input type="text" class="form-control" id="title" name="title" maxlength="125" required
+                    value="{{ event.title if event else '' }}">
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" maxlength="1000"
+                    rows="4">{{ event.description if event else '' }}</textarea>
+                <small class="form-text text-muted"><span id="charCount">0</span>/1000 characters</small>
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label required">Event Date</label>
+                <input type="date" class="form-control" id="event_date" name="event_date" required
+                    value="{{ event.event_date if event else '' }}">
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label required">Department</label>
+                <div class="mb-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllBtn">
+                        <i class="bi bi-check-all"></i> Select All
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllBtn">
+                        <i class="bi bi-x"></i> Deselect All
+                    </button>
+                </div>
+                <div class="department-checkboxes">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input department-checkbox" id="dept_ce" name="department" value="Computer Engineering" {% if event and "Computer Engineering" in event.department.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="dept_ce">
+                            Computer Engineering
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input department-checkbox" id="dept_it" name="department" value="Information Technology" {% if event and "Information Technology" in event.department.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="dept_it">
+                            Information Technology
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input department-checkbox" id="dept_me" name="department" value="Mechanical Engineering" {% if event and "Mechanical Engineering" in event.department.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="dept_me">
+                            Mechanical Engineering
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input department-checkbox" id="dept_ee" name="department" value="Electrical Engineering" {% if event and "Electrical Engineering" in event.department.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="dept_ee">
+                            Electrical Engineering
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input department-checkbox" id="dept_ce2" name="department" value="Civil Engineering" {% if event and "Civil Engineering" in event.department.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="dept_ce2">
+                            Civil Engineering
+                        </label>
+                    </div>
+
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input department-checkbox" id="dept_ele" name="department" value="Electronics Engineering" {% if event and "Electronics Engineering" in event.department.split(',') %}checked{% endif %}>
+                        <label class="form-check-label" for="dept_ele">
+                            Electronics Engineering
+                        </label>
+                    </div>
+                </div>
+                <small class="form-text text-muted d-block mt-2">Select at least one department</small>
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label required">Flyer/Poster Upload</label>
+                <input type="file" class="form-control" id="banner_image" name="banner_image" accept="image/*" required>
+                <small class="form-text text-muted">Upload a banner image (PNG, JPG, JPEG, WEBP). This is compulsory.</small>
+                {% if event and event.banner_image %}
+                <div class="mt-2">
+                    <small class="text-muted">Current image:</small>
+                    <div class="mt-2">
+                        <img src="{{ url_for('static', filename='uploads/events/' + event.banner_image) }}" alt="Banner" class="img-thumbnail" style="max-width: 200px;">
+                    </div>
+                </div>
+                {% endif %}
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">PDF Document</label>
+                <input type="file" class="form-control" id="pdf_file" name="pdf_file" accept=".pdf">
+                <small class="form-text text-muted">Upload a PDF document (optional).</small>
+                {% if event and event.pdf_file %}
+                <div class="mt-2">
+                    <small class="text-muted">Current document:</small>
+                    <div class="mt-2">
+                        <a href="{{ url_for('static', filename='uploads/events/' + event.pdf_file) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                            <i class="bi bi-file-pdf"></i> View PDF
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="text-end">
+                <a href="{{ url_for('admin.events') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success" id="submitBtn" disabled>
+                    {{ "Update" if event else "Create" }}
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/event_validation.js') }}"></script>
+{% endblock %}

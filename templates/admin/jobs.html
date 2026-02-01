@@ -1,0 +1,390 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="text-primary">Job Posts Management</h2>
+            <p class="text-muted">View, verify, and control job postings uploaded by alumni</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-light border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Total Job Posts</h6>
+                    <h3 class="text-primary">{{ total_jobs }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Verified Posts</h6>
+                    <h3 class="text-success">{{ verified_jobs }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Pending Review</h6>
+                    <h3 class="text-warning">{{ pending_jobs }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-light border-0 shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Inactive Posts</h6>
+                    <h3 class="text-danger">{{ inactive_jobs }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="mb-4">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link {% if status_filter == 'all' %}active{% endif %}"
+                    href="{{ url_for('admin.jobs', status='all') }}">
+                    All Posts ({{ total_jobs }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if status_filter == 'pending' %}active{% endif %}"
+                    href="{{ url_for('admin.jobs', status='pending') }}">
+                    <i class="fas fa-clock"></i> Pending Review ({{ pending_jobs }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if status_filter == 'verified' %}active{% endif %}"
+                    href="{{ url_for('admin.jobs', status='verified') }}">
+                    <i class="fas fa-check-circle"></i> Verified ({{ verified_jobs }})
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if status_filter == 'inactive' %}active{% endif %}"
+                    href="{{ url_for('admin.jobs', status='inactive') }}">
+                    <i class="fas fa-ban"></i> Inactive ({{ inactive_jobs }})
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Jobs List -->
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Job Title</th>
+                        <th>Company</th>
+                        <th>Posted By</th>
+                        <th>Job Type</th>
+                        <th>Status</th>
+                        <th>Posted Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if jobs.items %}
+                    {% for job in jobs.items %}
+                    <tr>
+                        <td>
+                            {% if job.is_from_banner and job.banner_image %}
+                            <img src="{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}" 
+                                alt="Job Banner" style="height: 60px; width: 100px; object-fit: cover; border-radius: 4px;">
+                            {% else %}
+                            <strong>{{ job.title }}</strong>
+                            {% endif %}
+                            {% if not job.is_active %}
+                            <span class="badge bg-danger ms-2">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if job.company %}
+                            {{ job.company }}
+                            {% else %}
+                            <span class="text-muted" style="font-style: italic;">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ job.poster.name }}</small>
+                            <br>
+                            <span class="badge bg-info">{{ job.poster.role.value if job.poster.role else 'Unknown'
+                                }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ job.job_type }}</span>
+                        </td>
+                        <td>
+                            {% if job.is_verified %}
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle"></i> Verified
+                            </span>
+                            {% else %}
+                            <span class="badge bg-warning">
+                                <i class="fas fa-clock"></i> Pending
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {{ job.created_at.strftime('%d %b %Y') }}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm gap-1" role="group">
+                                <!-- View Details Button -->
+                                <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                                    data-bs-target="#jobModal{{ job.id }}">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+
+                                <!-- Verify Button (only for unverified) -->
+                                {% if not job.is_verified %}
+                                <form method="POST"
+                                    action="{{ url_for('admin.verify_job', job_id=job.id, status=status_filter) }}"
+                                    style="display:inline;">
+                                    <button type="submit" class="btn btn-success" title="Approve this job posting"
+                                        onclick="return confirm('Are you sure you want to verify this job post?')">
+                                        <i class="fas fa-check"></i> Verify
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                <!-- Reject Button (only for verified) -->
+                                {% if job.is_verified and job.is_active %}
+                                <form method="POST"
+                                    action="{{ url_for('admin.reject_job', job_id=job.id, status=status_filter) }}"
+                                    style="display:inline;">
+                                    <button type="submit" class="btn btn-warning" title="Reject this job posting"
+                                        onclick="return confirm('Are you sure you want to reject this job post?')">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                                <!-- Delete Button -->
+                                <form method="POST"
+                                    action="{{ url_for('admin.delete_job', job_id=job.id, status=status_filter) }}"
+                                    style="display:inline;">
+                                    <button type="submit" class="btn btn-danger"
+                                        title="Permanently delete this job posting"
+                                        onclick="return confirm('Are you sure you want to permanently delete this job post? This action cannot be undone.')">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Job Details Modal -->
+                    <div class="modal fade" id="jobModal{{ job.id }}" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">{{ job.title }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    {% if job.is_from_banner and job.banner_image %}
+                                    <!-- Banner Image Only -->
+                                    <div class="text-center">
+                                        <img src="{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}" 
+                                            alt="Job Banner" class="img-fluid rounded" style="max-height: 400px; object-fit: cover;">
+                                        <p class="text-muted mt-3">
+                                            <i class="fas fa-image"></i> Posted via Image Upload
+                                        </p>
+                                        <hr>
+                                        <div class="text-muted small">
+                                            <p><strong>Posted by:</strong> {{ job.poster.name }} ({{ job.poster.email }})</p>
+                                            <p><strong>Posted on:</strong> {{ job.created_at.strftime('%d %B %Y at %H:%M') }}</p>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <!-- Full Job Details -->
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Company</h6>
+                                            <p><strong>{{ job.company }}</strong></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Job Type</h6>
+                                            <p><strong>{{ job.job_type }}</strong></p>
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Posted By</h6>
+                                            <p><strong>{{ job.poster.name }}</strong> ({{ job.poster.email }})</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Status</h6>
+                                            <p>
+                                                {% if job.is_verified %}
+                                                <span class="badge bg-success">Verified</span>
+                                                {% else %}
+                                                <span class="badge bg-warning">Pending</span>
+                                                {% endif %}
+                                                {% if not job.is_active %}
+                                                <span class="badge bg-danger">Inactive</span>
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <h6 class="text-muted">Description</h6>
+                                        <p>{{ job.description }}</p>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        {% if job.location %}
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Location</h6>
+                                            <p>{{ job.location }}</p>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if job.salary_range %}
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Salary Range</h6>
+                                            <p>{{ job.salary_range }}</p>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        {% if job.eligibility %}
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Eligibility</h6>
+                                            <p>{{ job.eligibility }}</p>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if job.department %}
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Department</h6>
+                                            <p>{{ job.department }}</p>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        {% if job.application_deadline %}
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Application Deadline</h6>
+                                            <p>{{ job.application_deadline.strftime('%d %B %Y') }}</p>
+                                        </div>
+                                        {% endif %}
+
+                                        {% if job.contact_email %}
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted">Contact Email</h6>
+                                            <p><a href="mailto:{{ job.contact_email }}">{{ job.contact_email }}</a></p>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+
+                                    {% if job.contact_phone %}
+                                    <div class="mb-3">
+                                        <h6 class="text-muted">Contact Phone</h6>
+                                        <p><a href="tel:{{ job.contact_phone }}">{{ job.contact_phone }}</a></p>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if job.apply_link %}
+                                    <div class="mb-3">
+                                        <h6 class="text-muted">Application Link</h6>
+                                        <p><a href="{{ job.apply_link }}" target="_blank"
+                                                class="btn btn-sm btn-primary">
+                                                Open Application Link <i class="fas fa-external-link-alt"></i>
+                                            </a></p>
+                                    </div>
+                                    {% endif %}
+
+                                    <hr>
+
+                                    <div class="text-muted small">
+                                        <p>Posted on: {{ job.created_at.strftime('%d %B %Y at %H:%M') }}</p>
+                                        <p>Last updated: {{ job.updated_at.strftime('%d %B %Y at %H:%M') }}</p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            <i class="fas fa-inbox fa-3x mb-3 d-block text-secondary"></i>
+                            <p>No job posts found.</p>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if jobs.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if jobs.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin.jobs', page=1, status=status_filter) }}">First</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('admin.jobs', page=jobs.prev_num, status=status_filter) }}">Previous</a>
+            </li>
+            {% endif %}
+
+            {% for page_num in jobs.iter_pages(left_edge=1, left_margin=1, right_margin=1, right_edge=1) %}
+            {% if page_num %}
+            {% if page_num == jobs.page %}
+            <li class="page-item active">
+                <span class="page-link">{{ page_num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin.jobs', page=page_num, status=status_filter) }}">{{ page_num
+                    }}</a>
+            </li>
+            {% endif %}
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if jobs.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                    href="{{ url_for('admin.jobs', page=jobs.next_num, status=status_filter) }}">Next</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('admin.jobs', page=jobs.pages, status=status_filter) }}">Last</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<!-- Include Toastr for notifications -->
+<script src="{{ url_for('static', filename='js/toastr_notification.js') }}"></script>
+{% endblock %}

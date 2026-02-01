@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Faculty Dashboard | Alumni Portal</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <!-- Bootstrap Override CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-override.css') }}">
+
+    <!-- jQuery (required for Toastr) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Toastr Notifications CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+    <!-- Toastr JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <nav class="navbar navbar-dark fixed-top admin-header">
+        <div class="container-fluid">
+            <span class="navbar-brand fw-bold">
+                🎓 Alumni Portal – Faculty
+            </span>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2">
+                    {% if current_user.profile_photo %}
+                    <img src="{{ url_for('static', filename=current_user.profile_photo) }}" 
+                         alt="Profile Photo" class="rounded-circle" style="width: 35px; height: 35px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center" 
+                         style="width: 35px; height: 35px; color: white; font-weight: bold;">
+                        {{ current_user.name[0].upper() }}
+                    </div>
+                    {% endif %}
+                    <span class="navbar-brand-sub">
+                        {{ current_user.name }}
+                    </span>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-primary btn-sm">
+                    Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- SIDEBAR -->
+    <div class="admin-container">
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+
+                <li>
+                    <a href="{{ url_for('faculty.dashboard') }}"
+                       class="{% if request.endpoint == 'faculty.dashboard' %}active{% endif %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+
+                <li class="menu-title">Profile</li>
+
+                <li>
+                    <a href="{{ url_for('faculty.profile') }}"
+                       class="{% if request.endpoint == 'faculty.profile' %}active{% endif %}">
+                        <i class="bi bi-person"></i> My Profile
+                    </a>
+                </li>
+
+                <li class="menu-title">Department View</li>
+
+                <li>
+                    <a href="{{ url_for('faculty.announcements') }}"
+                       class="{% if request.endpoint == 'faculty.announcements' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-megaphone"></i> Announcements
+                        </span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('faculty.alumni') }}"
+                       class="{% if request.endpoint == 'faculty.alumni' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-mortarboard"></i> Alumni
+                        </span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('faculty.students') }}"
+                       class="{% if request.endpoint == 'faculty.students' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-people"></i> Students
+                        </span>
+                    </a>
+                </li>
+
+                <li class="menu-title">Placement & Activities</li>
+
+                <li>
+                    <a href="{{ url_for('faculty.recommendations') }}"
+                       class="{% if request.endpoint == 'faculty.recommendations' %}active{% endif %}">
+                        <i class="bi bi-award"></i> Recommendations
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('faculty.placement') }}"
+                       class="{% if request.endpoint == 'faculty.placement' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-briefcase"></i> Placement Cell
+                        </span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ url_for('faculty.seminars') }}"
+                       class="{% if request.endpoint == 'faculty.seminars' %}active{% endif %} menu-item-with-badge">
+                        <span class="menu-item-content">
+                            <i class="bi bi-easel"></i> Seminars & Lectures
+                        </span>
+                    </a>
+                </li>
+
+            </ul>
+        </aside>
+
+        <main class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <script>
+                        (function() {
+                            var messages = [
+                                {% for category, message in messages %}
+                                {category: "{{ category }}", message: "{{ message | replace('"', '\\"') }}"}{{ "," if not loop.last else "" }}
+                                {% endfor %}
+                            ];
+                            
+                            setTimeout(function() {
+                                messages.forEach(function(item) {
+                                    if (item.category === 'error') {
+                                        toastr.error(item.message, 'Error');
+                                    } else if (item.category === 'warning') {
+                                        toastr.warning(item.message, 'Warning');
+                                    } else if (item.category === 'success') {
+                                        toastr.success(item.message, 'Success');
+                                    } else {
+                                        toastr.info(item.message, 'Info');
+                                    }
+                                });
+                            }, 100);
+                        })();
+                    </script>
+                {% endif %}
+            {% endwith %}
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Toastr Notification Setup -->
+    <script src="{{ url_for('static', filename='js/toastr_notification.js') }}"></script>
+
+</body>
+
+</html>

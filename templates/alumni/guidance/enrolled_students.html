@@ -1,0 +1,307 @@
+{% extends "alumni/base.html" %}
+
+{% block content %}
+<div class="container-lg">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-primary">
+                    <i class="bi bi-people"></i> Students Enrolled in: {{ guidance.title }}
+                </h2>
+                <p class="text-muted">Manage and communicate with students enrolled in this guidance program</p>
+            </div>
+            <div>
+                <a href="{{ url_for('alumni.view_guidance', guidance_id=guidance.id) }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Guidance
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guidance Information Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5 class="card-title">{{ guidance.title }}</h5>
+                    <p class="card-text text-muted">{{ guidance.description[:150] }}...</p>
+                    <div class="mt-3">
+                        <span class="badge bg-primary">{{ guidance.category }}</span>
+                        <span class="badge bg-secondary">{{ guidance.preferred_method }}</span>
+                        <span class="badge bg-success">{{ guidance.status|capitalize }}</span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="text-end">
+                        <div class="stat-box">
+                            <div class="stat-value">{{ enrollments.total }}</div>
+                            <div class="stat-label">Total Enrollments</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- No Enrollments Message -->
+    {% if enrollments.total == 0 %}
+    <div class="card border-0 bg-light">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: #cbd5e0;"></i>
+            <h5 class="mt-3">No Student Enrollments Yet</h5>
+            <p class="text-muted">
+                Students haven't enrolled in this guidance program yet.
+                They'll appear here once they enroll.
+            </p>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Filter & Search Section -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <input type="text" id="searchInput" class="form-control"
+                placeholder="Search by student name, email, or student ID...">
+        </div>
+        <div class="col-md-4">
+            <select id="departmentFilter" class="form-select">
+                <option value="">All Departments</option>
+                <option value="Computer Engineering">Computer Engineering</option>
+                <option value="Electronics Engineering">Electronics Engineering</option>
+                <option value="Mechanical Engineering">Mechanical Engineering</option>
+                <option value="Civil Engineering">Civil Engineering</option>
+                <option value="IT Engineering">IT Engineering</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Students Table -->
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Student Name</th>
+                    <th>Student ID</th>
+                    <th>Department</th>
+                    <th>Batch Year</th>
+                    <th>Email</th>
+                    <th>Enrolled Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set counter = (enrollments.page - 1) * enrollments.per_page + 1 %}
+                {% for enrollment in enrollments.items %}
+                <tr class="student-row" data-student-id="{{ enrollment.student.student_id }}"
+                    data-department="{{ enrollment.student.department }}">
+                    <td>{{ counter }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="avatar">
+                                <i class="bi bi-person-circle"></i>
+                            </div>
+                            <strong>{{ enrollment.student.user.name }}</strong>
+                        </div>
+                    </td>
+                    <td>{{ enrollment.student.student_id }}</td>
+                    <td>{{ enrollment.student.department }}</td>
+                    <td>{{ enrollment.student.batch_year }}</td>
+                    <td>
+                        <a href="mailto:{{ enrollment.student.user.email }}">
+                            {{ enrollment.student.user.email }}
+                        </a>
+                    </td>
+                    <td>{{ enrollment.enrolled_at.strftime('%d %b %Y') }}</td>
+                    <td>
+                        {% if enrollment.status == "active" %}
+                        <span class="badge bg-success">Active</span>
+                        {% elif enrollment.status == "completed" %}
+                        <span class="badge bg-info">Completed</span>
+                        {% else %}
+                        <span class="badge bg-secondary">{{ enrollment.status|capitalize }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            {% if enrollment.student.user.phone_number %}
+                            <a href="tel:{{ enrollment.student.user.phone_number }}"
+                                class="btn btn-sm btn-outline-info" title="Call">
+                                <i class="bi bi-telephone"></i>
+                            </a>
+                            {% endif %}
+                            {% if enrollment.student.user.linkedin_profile %}
+                            <a href="{{ enrollment.student.user.linkedin_profile }}" target="_blank"
+                                class="btn btn-sm btn-outline-primary" title="LinkedIn">
+                                <i class="bi bi-linkedin"></i>
+                            </a>
+                            {% endif %}
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                onclick="removeEnrollment({{ enrollment.id }}, '{{ enrollment.student.user.name }}')">
+                                <i class="bi bi-x-circle"></i> Remove
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% set counter = counter + 1 %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if enrollments.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if enrollments.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ enrollments.prev_num }}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+
+            {% for page_num in enrollments.iter_pages() %}
+            {% if page_num %}
+            {% if page_num == enrollments.page %}
+            <li class="page-item active">
+                <span class="page-link">{{ page_num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+            </li>
+            {% endif %}
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if enrollments.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ enrollments.next_num }}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% endif %}
+</div>
+
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .page-header h2 {
+        color: #c41e3a;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-box {
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #c41e3a;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-weight: 500;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #c41e3a, #8b0000);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .btn-group .btn {
+        border-color: #dee2e6;
+    }
+
+    .btn-group .btn:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+
+<script>
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function () {
+        const searchValue = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.student-row');
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(searchValue) ? '' : 'none';
+        });
+    });
+
+    // Department filter
+    document.getElementById('departmentFilter').addEventListener('change', function () {
+        const filterValue = this.value;
+        const rows = document.querySelectorAll('.student-row');
+
+        rows.forEach(row => {
+            const department = row.getAttribute('data-department');
+            row.style.display = (filterValue === '' || department === filterValue) ? '' : 'none';
+        });
+    });
+
+    function removeEnrollment(enrollmentId, studentName) {
+        if (confirm(`Are you sure you want to remove ${studentName} from this guidance?`)) {
+            fetch(`/alumni/enrollments/${enrollmentId}/remove`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message);
+                    // Refresh page after 1 second
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    toastr.error(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('An error occurred while removing the enrollment.');
+            });
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,298 @@
+{% extends "student/base.html" %}
+
+{% block title %}My Guidance Enrollments | Student - Alumni Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-bookmark-check"></i> My Guidance Enrollments</h1>
+    <p>Programs you're currently enrolled in</p>
+</div>
+
+<div class="container-fluid">
+    <!-- No Enrollments -->
+    {% if enrollments.total == 0 %}
+    <div class="card border-0 bg-light">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: #cbd5e0;"></i>
+            <h5 class="mt-3">No Enrollments Yet</h5>
+            <p class="text-muted mb-4">
+                You haven't enrolled in any guidance programs yet.
+                Browse available guidance and enroll to get started!
+            </p>
+            <a href="{{ url_for('student.guidance') }}" class="btn btn-primary">
+                <i class="bi bi-search"></i> Browse Guidance
+            </a>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ enrollments.total }}</div>
+                <div class="stat-label">Programs Enrolled</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                {% set mentor_count = enrollments.items|map(attribute='guidance.alumni_id')|unique|list|length %}
+                <div class="stat-number">{{ mentor_count }}</div>
+                <div class="stat-label">Mentors</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                {% set categories = enrollments.items|map(attribute='guidance.category')|unique|list %}
+                <div class="stat-number">{{ categories|length }}</div>
+                <div class="stat-label">Topics</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                {% set total_sessions = enrollments.items|map(attribute='guidance.guidance_sessions.count')|sum %}
+                <div class="stat-number">{{ total_sessions }}</div>
+                <div class="stat-label">Sessions Available</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enrollments List -->
+    <div class="row">
+        {% for enrollment in enrollments.items %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="enrollment-card card h-100">
+                <!-- Card Header with Alumni Info -->
+                <div class="card-header bg-light border-0 pb-0">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="mentor-avatar">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <div class="mentor-info">
+                            <h6 class="mb-0">{{ enrollment.guidance.alumni.user.name }}</h6>
+                            <small class="text-muted">{{ enrollment.guidance.alumni.current_role or 'Alumni' }}</small>
+                            {% if enrollment.guidance.alumni.current_company %}
+                            <small class="text-muted d-block">{{ enrollment.guidance.alumni.current_company }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body">
+                    <!-- Title -->
+                    <h5 class="card-title">{{ enrollment.guidance.title }}</h5>
+
+                    <!-- Category & Status Badges -->
+                    <div class="mb-3">
+                        {% if enrollment.guidance.category == "Career" %}
+                        <span class="badge bg-primary">Career</span>
+                        {% elif enrollment.guidance.category == "Technical" %}
+                        <span class="badge bg-info">Technical</span>
+                        {% elif enrollment.guidance.category == "Personal" %}
+                        <span class="badge bg-warning text-dark">Personal</span>
+                        {% elif enrollment.guidance.category == "Academic" %}
+                        <span class="badge bg-success">Academic</span>
+                        {% elif enrollment.guidance.category == "Placement" %}
+                        <span class="badge bg-danger">Placement</span>
+                        {% endif %}
+                        <span class="badge bg-secondary">{{ enrollment.guidance.preferred_method }}</span>
+                        <span class="badge bg-info">Enrolled</span>
+                    </div>
+
+                    <!-- Description -->
+                    <p class="card-text text-muted small">
+                        {{ enrollment.guidance.description[:120] }}{% if enrollment.guidance.description|length > 120 %}...{% endif %}
+                    </p>
+
+                    <!-- Details -->
+                    <div class="guidance-details">
+                        <div class="detail-item">
+                            <i class="bi bi-hourglass-split"></i>
+                            <span>{{ enrollment.guidance.duration_weeks }} weeks</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-calendar-event"></i>
+                            <span>{{ enrollment.guidance.meeting_frequency }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-chat-left-text"></i>
+                            <span>{{ enrollment.guidance.guidance_sessions.count() }} sessions</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-calendar-check"></i>
+                            <span>Enrolled on {{ enrollment.enrolled_at.strftime('%b %d, %Y') }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Footer -->
+                <div class="card-footer bg-light border-top">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('student.guidance_detail', guidance_id=enrollment.guidance.id) }}"
+                            class="btn btn-primary btn-sm">
+                            <i class="bi bi-zoom-in"></i> View Details
+                        </a>
+                        <button type="button" class="btn btn-outline-danger btn-sm"
+                            onclick="unenrollGuidance({{ enrollment.guidance.id }})">
+                            <i class="bi bi-x-circle"></i> Unenroll
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if enrollments.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if enrollments.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ enrollments.prev_num }}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+
+            {% for page_num in enrollments.iter_pages() %}
+            {% if page_num %}
+            {% if page_num == enrollments.page %}
+            <li class="page-item active">
+                <span class="page-link">{{ page_num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+            </li>
+            {% endif %}
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if enrollments.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ enrollments.next_num }}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% endif %}
+</div>
+
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .page-header h1 {
+        color: #c41e3a;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #c41e3a;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-weight: 500;
+    }
+
+    .enrollment-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .enrollment-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .mentor-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #c41e3a, #8b0000);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .mentor-info {
+        flex: 1;
+    }
+
+    .guidance-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .detail-item {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .detail-item i {
+        color: #c41e3a;
+        margin-right: 0.5rem;
+    }
+</style>
+
+<script>
+    function unenrollGuidance(guidanceId) {
+        if (confirm('Are you sure you want to unenroll from this guidance?')) {
+            fetch(`/student/guidance/${guidanceId}/unenroll`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message);
+                    // Refresh page after 1 second
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    toastr.error(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('An error occurred while unenrolling.');
+            });
+        }
+    }
+</script>
+{% endblock %}

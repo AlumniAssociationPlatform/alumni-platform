@@ -1,0 +1,156 @@
+{% extends "student/base.html" %}
+
+{% block title %}{{ guidance.topic }} | Guidance - Alumni Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-chat-quote"></i> {{ guidance.topic }}</h1>
+            <p class="text-muted">Get guidance from {{ guidance.user.name }}</p>
+        </div>
+        <a href="{{ url_for('student.guidance') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Guidance Details Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">About this Guidance</h5>
+                    <p class="text-muted">{{ guidance.description }}</p>
+
+                    {% if guidance.requirements %}
+                    <h6 class="mt-4 mb-2 fw-bold">Requirements</h6>
+                    <p class="text-muted">{{ guidance.requirements }}</p>
+                    {% endif %}
+
+                    <div class="row mt-4 pt-3 border-top">
+                        <div class="col-md-4">
+                            <h6 class="text-muted small">Mentor</h6>
+                            <p class="fw-bold">{{ guidance.user.name }}</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted small">Status</h6>
+                            <span class="badge bg-success">Active</span>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted small">Posted On</h6>
+                            <p class="small">{{ guidance.created_at.strftime('%d %B %Y') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Questions Section -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0"><i class="bi bi-question-circle"></i> Ask a Question</h5>
+                </div>
+                <div class="card-body">
+                    <form id="questionForm" method="POST" action="{{ url_for('student.ask_question', guidance_id=guidance.id) }}">
+                        <div class="mb-3">
+                            <label for="question" class="form-label">Your Question</label>
+                            <textarea class="form-control" id="question" name="question" rows="4" 
+                                      placeholder="Ask your question..." required></textarea>
+                            <small class="text-muted">Be specific and clear to get better guidance</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send"></i> Post Question
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Mentor Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body text-center">
+                    {% if guidance.user.profile_photo %}
+                        <img src="{{ url_for('static', filename=guidance.user.profile_photo) }}" 
+                             alt="{{ guidance.user.name }}" class="rounded-circle mb-3" 
+                             style="width: 100px; height: 100px; object-fit: cover;">
+                    {% else %}
+                        <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center bg-light" 
+                             style="width: 100px; height: 100px; color: #c41e3a; font-weight: bold; font-size: 2rem;">
+                            {{ guidance.user.name[0].upper() }}
+                        </div>
+                    {% endif %}
+                    
+                    <h5>{{ guidance.user.name }}</h5>
+                    <p class="text-muted">Alumni Mentor</p>
+                    
+                    {% if guidance.user.email %}
+                    <a href="mailto:{{ guidance.user.email }}" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="bi bi-envelope"></i> Contact Mentor
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Info Card -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h6 class="mb-0"><i class="bi bi-info-circle"></i> Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="small text-muted ps-3">
+                        <li class="mb-2">Ask clear and specific questions</li>
+                        <li class="mb-2">Be respectful and professional</li>
+                        <li class="mb-2">Check existing answers first</li>
+                        <li>Avoid sharing personal information</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.getElementById('questionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const form = this;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Posting...';
+    
+    const formData = new FormData(form);
+    
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            toastr.success(data.message);
+            form.reset();
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        } else {
+            toastr.error(data.message);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    })
+    .catch(error => {
+        toastr.error('An error occurred. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+    });
+});
+</script>
+{% endblock %}

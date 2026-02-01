@@ -1,0 +1,135 @@
+{% extends "student/base.html" %}
+
+{% block title %}My Applications | Student - Alumni Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-file-earmark-check"></i> My Applications</h1>
+    <p>Track and manage your job applications</p>
+</div>
+
+<div class="container-fluid">
+    <!-- Filter Tabs -->
+    <div class="mb-4">
+        <div class="btn-group" role="group">
+            <a href="{{ url_for('student.my_applications') }}" 
+               class="btn btn-outline-primary {% if not status %}active{% endif %}">
+                <i class="bi bi-collection"></i> All ({{ applications.total }})
+            </a>
+            <a href="{{ url_for('student.my_applications', status='pending') }}" 
+               class="btn btn-outline-warning {% if status == 'pending' %}active{% endif %}">
+                <i class="bi bi-hourglass-split"></i> Pending
+            </a>
+            <a href="{{ url_for('student.my_applications', status='accepted') }}" 
+               class="btn btn-outline-success {% if status == 'accepted' %}active{% endif %}">
+                <i class="bi bi-check-circle"></i> Accepted
+            </a>
+            <a href="{{ url_for('student.my_applications', status='rejected') }}" 
+               class="btn btn-outline-danger {% if status == 'rejected' %}active{% endif %}">
+                <i class="bi bi-x-circle"></i> Rejected
+            </a>
+        </div>
+    </div>
+
+    {% if applications.items %}
+        <div class="row">
+            {% for application in applications.items %}
+            <div class="col-lg-6 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="card-title mb-1">
+                                    {% if application.job %}
+                                        {{ application.job.title }}
+                                    {% else %}
+                                        Job Posting
+                                    {% endif %}
+                                </h5>
+                                {% if application.job %}
+                                <p class="text-muted small mb-2">
+                                    <i class="bi bi-building"></i> {{ application.job.company }}
+                                </p>
+                                {% endif %}
+                            </div>
+                            <span class="badge 
+                                {% if application.status == 'pending' %}bg-warning
+                                {% elif application.status == 'accepted' %}bg-success
+                                {% else %}bg-danger
+                                {% endif %}">
+                                {{ application.status.upper() }}
+                            </span>
+                        </div>
+
+                        {% if application.job %}
+                        <p class="text-muted small mb-3">{{ application.job.description[:100] }}...</p>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-calendar"></i> Applied on {{ application.applied_at.strftime('%d %B %Y') }}
+                            </small>
+                            {% if application.job %}
+                            <a href="{{ url_for('student.view_job', job_id=application.job_id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                View Job
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if applications.pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if applications.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('student.my_applications', page=applications.prev_num, status=status) }}">
+                        Previous
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in applications.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num == applications.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('student.my_applications', page=page_num, status=status) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if applications.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('student.my_applications', page=applications.next_num, status=status) }}">
+                        Next
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No applications yet.
+            <a href="{{ url_for('student.jobs') }}">Browse jobs and internships →</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

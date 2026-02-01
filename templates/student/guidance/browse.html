@@ -1,0 +1,487 @@
+{% extends "student/base.html" %}
+
+{% block title %}Guidance & Mentorship | Student - Alumni Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-chat-quote"></i> Guidance & Mentorship</h1>
+    <p>Learn from experienced alumni and get guidance on your career path</p>
+</div>
+
+<div class="container-fluid">
+    <!-- Search -->
+    <div class="mb-4">
+        <form method="GET" class="row g-2">
+            <div class="col-md-8">
+                <input type="text" name="search" class="form-control" placeholder="Search guidance by topic..."
+                       value="{{ search or '' }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- No Guidance Available -->
+    {% if guidances.total == 0 %}
+    <div class="card border-0 bg-light">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-inbox" style="font-size: 3rem; color: #cbd5e0;"></i>
+            <h5 class="mt-3">No Guidance Available</h5>
+            <p class="text-muted">
+                No mentorship opportunities are currently available.
+                Check back soon or contact alumni to request guidance!
+            </p>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ guidances.total }}</div>
+                <div class="stat-label">Available Guidance Sessions</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                {% set alumni_count = guidances.items|map(attribute='alumni_id')|unique|list|length %}
+                <div class="stat-number">{{ alumni_count }}</div>
+                <div class="stat-label">Mentor Alumni</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                {% set categories = guidances.items|map(attribute='category')|unique|list %}
+                <div class="stat-number">{{ categories|length }}</div>
+                <div class="stat-label">Topics Covered</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">
+                    {% set active = guidances.items|selectattr('status', 'equalto', 'active')|list|length %}
+                    {{ active }}
+                </div>
+                <div class="stat-label">Active Sessions</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guidance Cards -->
+    <div class="row">
+        {% for guidance in guidances.items %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="guidance-card card h-100">
+                <!-- Card Header with Alumni Info -->
+                <div class="card-header bg-light border-0 pb-0">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="mentor-avatar">
+                            <i class="bi bi-person-circle"></i>
+                        </div>
+                        <div class="mentor-info">
+                            <h6 class="mb-0">{{ guidance.alumni.user.name }}</h6>
+                            <small class="text-muted">{{ guidance.alumni.current_role or 'Alumni' }}</small>
+                            {% if guidance.alumni.current_company %}
+                            <small class="text-muted d-block">{{ guidance.alumni.current_company }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body">
+                    <!-- Title -->
+                    <h5 class="card-title">{{ guidance.title }}</h5>
+
+                    <!-- Category & Status Badges -->
+                    <div class="mb-3">
+                        {% if guidance.category == "Career" %}
+                        <span class="badge bg-primary">Career</span>
+                        {% elif guidance.category == "Technical" %}
+                        <span class="badge bg-info">Technical</span>
+                        {% elif guidance.category == "Personal" %}
+                        <span class="badge bg-warning text-dark">Personal</span>
+                        {% elif guidance.category == "Academic" %}
+                        <span class="badge bg-success">Academic</span>
+                        {% elif guidance.category == "Placement" %}
+                        <span class="badge bg-danger">Placement</span>
+                        {% endif %}
+                        <span class="badge bg-secondary">{{ guidance.preferred_method }}</span>
+                    </div>
+
+                    <!-- Description -->
+                    <p class="card-text text-muted small">
+                        {{ guidance.description[:120] }}{% if guidance.description|length > 120 %}...{% endif %}
+                    </p>
+
+                    <!-- Details -->
+                    <div class="guidance-details">
+                        <div class="detail-item">
+                            <i class="bi bi-hourglass-split"></i>
+                            <span>{{ guidance.duration_weeks }} weeks</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-calendar-event"></i>
+                            <span>{{ guidance.meeting_frequency }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <i class="bi bi-chat-left-text"></i>
+                            <span>{{ guidance.guidance_sessions.count() }} sessions</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Footer -->
+                <div class="card-footer bg-light border-top">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#guidanceModal{{ guidance.id }}">
+                            <i class="bi bi-zoom-in"></i> View Details
+                        </button>
+                        <button type="button" class="btn btn-outline-success btn-sm"
+                            onclick="enrollGuidance({{ guidance.id }})">
+                            <i class="bi bi-check-circle"></i> Enroll Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Modal for each guidance -->
+        <div class="modal fade" id="guidanceModal{{ guidance.id }}" tabindex="-1">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content border-0">
+                    <div class="modal-header bg-primary text-white border-0">
+                        <h5 class="modal-title">{{ guidance.title }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <!-- Mentor Card -->
+                        <div class="mentor-detail-card mb-4">
+                            <h6 class="mb-3">About Your Mentor</h6>
+                            <div class="d-flex gap-3">
+                                <div class="mentor-avatar-lg">
+                                    <i class="bi bi-person-circle"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-1">{{ guidance.alumni.user.name }}</h6>
+                                    <p class="text-muted small mb-1">
+                                        <strong>Department:</strong> {{ guidance.alumni.department }}
+                                    </p>
+                                    <p class="text-muted small mb-1">
+                                        <strong>Batch:</strong> {{ guidance.alumni.batch_year }}
+                                    </p>
+                                    {% if guidance.alumni.current_company %}
+                                    <p class="text-muted small mb-1">
+                                        <strong>Currently at:</strong> {{ guidance.alumni.current_company }}
+                                        {% if guidance.alumni.current_role %}
+                                        as {{ guidance.alumni.current_role }}
+                                        {% endif %}
+                                    </p>
+                                    {% endif %}
+                                    {% if guidance.alumni.linkedin_profile %}
+                                    <a href="{{ guidance.alumni.linkedin_profile }}" target="_blank"
+                                        class="btn btn-sm btn-outline-primary mt-2">
+                                        <i class="bi bi-linkedin"></i> LinkedIn Profile
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Guidance Details -->
+                        <h6 class="mb-3">Guidance Details</h6>
+                        <div class="mb-3">
+                            <strong>Title:</strong>
+                            <p>{{ guidance.title }}</p>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Category:</strong>
+                                <p>{{ guidance.category }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Duration:</strong>
+                                <p>{{ guidance.duration_weeks }} weeks</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Frequency:</strong>
+                                <p>{{ guidance.meeting_frequency }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Method:</strong>
+                                <p>{{ guidance.preferred_method }}</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <strong>Description:</strong>
+                            <p>{{ guidance.description }}</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <strong>Sessions Scheduled:</strong>
+                            <p>{{ guidance.guidance_sessions.count() }} sessions</p>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-success" onclick="enrollGuidance({{ guidance.id }})">
+                            <i class="bi bi-check-circle"></i> Enroll Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if guidances.pages > 1 %}
+    <nav aria-label="Page navigation" class="mt-5">
+        <ul class="pagination justify-content-center">
+            {% if guidances.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ guidances.prev_num }}">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </a>
+            </li>
+            {% endif %}
+
+            {% for page_num in guidances.iter_pages() %}
+            {% if page_num %}
+            {% if page_num == guidances.page %}
+            <li class="page-item active">
+                <span class="page-link">{{ page_num }}</span>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+            </li>
+            {% endif %}
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>
+            {% endif %}
+            {% endfor %}
+
+            {% if guidances.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ guidances.next_num }}">
+                    Next <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% endif %}
+</div>
+
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #e9ecef;
+    }
+
+    .page-header h2 {
+        color: #c41e3a;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-card {
+        text-align: center;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #c41e3a;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        font-weight: 500;
+    }
+
+    .guidance-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .guidance-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+
+    .mentor-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #c41e3a, #8b0000);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .mentor-info {
+        flex: 1;
+    }
+
+    .guidance-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .detail-item {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .detail-item i {
+        color: #c41e3a;
+        margin-right: 0.5rem;
+    }
+
+    .mentor-detail-card {
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .mentor-avatar-lg {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #c41e3a, #8b0000);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        flex-shrink: 0;
+    }
+</style>
+
+<script>
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keyup', function () {
+        const searchValue = this.value.toLowerCase();
+        const cards = document.querySelectorAll('.guidance-card');
+
+        cards.forEach(card => {
+            const text = card.innerText.toLowerCase();
+            card.parentElement.style.display = text.includes(searchValue) ? '' : 'none';
+        });
+    });
+
+    // Category filter
+    document.getElementById('categoryFilter').addEventListener('change', function () {
+        filterCards();
+    });
+
+    // Method filter
+    document.getElementById('methodFilter').addEventListener('change', function () {
+        filterCards();
+    });
+
+    function filterCards() {
+        const categoryValue = document.getElementById('categoryFilter').value;
+        const methodValue = document.getElementById('methodFilter').value;
+        const cards = document.querySelectorAll('.guidance-card');
+
+        cards.forEach(card => {
+            let showCard = true;
+
+            if (categoryValue !== '') {
+                const categoryMatch = card.innerText.includes(categoryValue);
+                showCard = showCard && categoryMatch;
+            }
+
+            if (methodValue !== '') {
+                const methodMatch = card.innerText.includes(methodValue);
+                showCard = showCard && methodMatch;
+            }
+
+            card.parentElement.style.display = showCard ? '' : 'none';
+        });
+    }
+
+    function enrollGuidance(guidanceId) {
+        fetch(`/student/guidance/${guidanceId}/enroll`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                toastr.success(data.message);
+                // Refresh page after 1 second
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                toastr.error(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            toastr.error('An error occurred while enrolling.');
+        });
+    }
+
+    function unenrollGuidance(guidanceId) {
+        if (confirm('Are you sure you want to unenroll from this guidance?')) {
+            fetch(`/student/guidance/${guidanceId}/unenroll`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message);
+                    // Refresh page after 1 second
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    toastr.error(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                toastr.error('An error occurred while unenrolling.');
+            });
+        }
+    }
+
+</script>
+{% endblock %}
