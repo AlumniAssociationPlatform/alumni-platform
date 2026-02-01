@@ -4,6 +4,7 @@ from config import Config
 from extensions import db, login_manager
 from flask import redirect, url_for, has_request_context
 from flask_login import current_user
+import os
 
 app = Flask(__name__)
 app.config.from_object(Config)
