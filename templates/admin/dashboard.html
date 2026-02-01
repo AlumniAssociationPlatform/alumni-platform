@@ -254,7 +254,7 @@
                                         <span class="badge bg-warning">Pending</span>
                                         {% endif %}
                                     </td>
-                                    <td class="text-muted small">{{ user.created_at.strftime('%d %b %Y') }}</td>
+                                    <td class="text-muted small">{% if user.created_at %}{{ user.created_at.strftime('%d %b %Y') }}{% else %}<span class="text-secondary">—</span>{% endif %}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
