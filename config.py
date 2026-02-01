@@ -3,11 +3,11 @@ import os
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "alumni-portal-secret-key")
 
-    DB_USER = os.getenv("MYSQL_USER")
-    DB_PASSWORD = os.getenv("MYSQL_PASSWORD")
-    DB_HOST = os.getenv("MYSQL_HOST")
-    DB_NAME = os.getenv("MYSQL_DB")
-    DB_PORT = os.getenv("MYSQL_PORT", 3306)
+    DB_USER = os.getenv("MYSQLUSER")
+    DB_PASSWORD = os.getenv("MYSQLPASSWORD")
+    DB_HOST = os.getenv("MYSQLHOST")
+    DB_NAME = os.getenv("MYSQLDATABASE")
+    DB_PORT = os.getenv("MYSQLPORT", 3306)
 
     SQLALCHEMY_DATABASE_URI = (
         f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
