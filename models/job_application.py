@@ -1,4 +1,5 @@
 from extensions import db
+from datetime import datetime
 
 class JobApplication(db.Model):
     __tablename__ = "job_applications"
@@ -11,7 +12,7 @@ class JobApplication(db.Model):
     status = db.Column(db.String(50), default="applied")
     # applied, shortlisted, rejected, selected
 
-    applied_at = db.Column(db.DateTime, server_default=db.func.now())
+    applied_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     job = db.relationship("Job", backref="applications")
     student = db.relationship("User", backref="applications")

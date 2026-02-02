@@ -1,4 +1,5 @@
 from extensions import db
+from datetime import datetime
 
 class Student(db.Model):
     __tablename__ = "students"
@@ -19,7 +20,7 @@ class Student(db.Model):
     phone_number = db.Column(db.String(20))
     linkedin_profile = db.Column(db.String(200))
 
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     # relationship
     user = db.relationship("User", backref=db.backref(

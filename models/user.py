@@ -2,6 +2,7 @@ from extensions import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from utils.user_role_enum import UserRole
+from datetime import datetime
 
 class User(UserMixin, db.Model):
     __tablename__ = "users"
@@ -23,7 +24,7 @@ class User(UserMixin, db.Model):
 
     profile_photo = db.Column(db.String(255), nullable=True)
 
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)

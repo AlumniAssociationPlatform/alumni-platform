@@ -35,8 +35,8 @@ class Guidance(db.Model):
         default="active"
     )  # active, completed, archived
     
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Additional fields
     duration_weeks = db.Column(db.Integer, default=4)  # Expected duration in weeks
@@ -100,8 +100,8 @@ class GuidanceSession(db.Model):
     )  # scheduled, completed, cancelled, rescheduled
     
     # Timestamps
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    updated_at = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     def __repr__(self):
         return f"<GuidanceSession {self.id} - {self.session_date}>"
@@ -137,7 +137,7 @@ class GuidanceQuestion(db.Model):
     )  # pending, answered, resolved
     
     # Timestamps
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     answered_at = db.Column(db.DateTime, nullable=True)
     
     # Relationship

@@ -85,8 +85,8 @@
                 </li>
 
                 <li>
-                    <a href="{{ url_for('alumni.jobs') }}"
-                       class="{% if request.endpoint == 'alumni.jobs' or request.endpoint == 'placement.jobs_list' %}active{% endif %}">
+                    <a href="{{ url_for('alumni.jobs_list') }}"
+                       class="{% if request.endpoint == 'alumni.jobs_list' or request.endpoint == 'alumni.create_job' or request.endpoint == 'alumni.edit_job' or request.endpoint == 'alumni.view_job' %}active{% endif %}">
                         <i class="bi bi-briefcase"></i> Jobs & Internships
                     </a>
                 </li>

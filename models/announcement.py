@@ -1,4 +1,5 @@
 from extensions import db
+from datetime import datetime
 
 class Announcement(db.Model):
     __tablename__ = "announcements"
@@ -10,7 +11,7 @@ class Announcement(db.Model):
 
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     creator = db.relationship("User", backref="announcements")

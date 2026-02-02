@@ -1,4 +1,5 @@
 from extensions import db
+from datetime import datetime
 
 class Event(db.Model):
     __tablename__ = "events"
@@ -14,7 +15,7 @@ class Event(db.Model):
 
     created_by = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     creator = db.relationship("User", backref="events")
     participants = db.relationship("EventParticipant", backref="event", cascade="all, delete-orphan")

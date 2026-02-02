@@ -1,5 +1,6 @@
 from extensions import db
 import enum
+from datetime import datetime
 
 class Department(enum.Enum):
     """Department enum for faculty and students"""
@@ -42,7 +43,7 @@ class Faculty(db.Model):
     phone_number = db.Column(db.String(20))
     linkedin_profile = db.Column(db.String(200))
 
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship("User", backref=db.backref(
         "faculty_profile",
