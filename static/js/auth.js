@@ -126,27 +126,27 @@ document.addEventListener("DOMContentLoaded", () => {
     /* ALUMNI */
     passout_year.addEventListener("input", () => {
         const year = passout_year.value.trim();
-        
+
         // Check if empty
         if (!year) {
             setInvalid(passout_year, "Passout year is required");
             return;
         }
-        
+
         // Check if it's a valid positive number (integers only)
         if (!/^\d+$/.test(year)) {
             setInvalid(passout_year, "Passout year must be a positive number");
             return;
         }
-        
+
         const yearNum = parseInt(year, 10);
-        
+
         // Check if year is within valid range (1950-2025)
         if (yearNum < 1950 || yearNum > 2025) {
             setInvalid(passout_year, "Passout year must be between 1950 and 2025");
             return;
         }
-        
+
         setValid(passout_year);
     });
 
@@ -182,9 +182,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     /* STUDENT */
     gr_no.addEventListener("input", () => {
-        /^\d{12}$/.test(gr_no.value)
+        /^[A-Za-z0-9]{12}$/.test(gr_no.value)
             ? setValid(gr_no)
-            : setInvalid(gr_no, "GR must be exactly 12 digits");
+            : setInvalid(gr_no, "GR must be exactly 12 alphanumeric characters");
     });
 
     department.addEventListener("change", () => {

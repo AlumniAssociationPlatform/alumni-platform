@@ -12,7 +12,7 @@ class Student(db.Model):
         nullable=False
     )
 
-    student_id = db.Column(db.String(50), unique=True, nullable=False)
+    student_id = db.Column(db.String(20), unique=True, nullable=False)
     department = db.Column(db.String(100), nullable=False)
     batch_year = db.Column(db.String(20), nullable=False)
     skills = db.Column(db.Text)
