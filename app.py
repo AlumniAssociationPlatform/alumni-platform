@@ -13,6 +13,15 @@ try:
     app = Flask(__name__)
     app.config.from_object(Config)
 
+    # Set timezone to UTC for the entire application
+    os.environ['TZ'] = 'UTC'
+
+    # Configure logging
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
     # Initialize extensions
     db.init_app(app)
     login_manager.init_app(app)
@@ -21,6 +30,7 @@ try:
 
     # Import models AFTER db init
     from models import User
+    from utils.timezone_helper import format_datetime_local
 
     @login_manager.user_loader
     def load_user(user_id):
