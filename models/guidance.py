@@ -137,7 +137,7 @@ class GuidanceQuestion(db.Model):
     )  # pending, answered, resolved
     
     # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
     answered_at = db.Column(db.DateTime, nullable=True)
     
     # Relationship
