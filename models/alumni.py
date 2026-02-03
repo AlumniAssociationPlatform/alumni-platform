@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from utils.datetime_defaults import utc_now
 
 class Alumni(db.Model):
     __tablename__ = "alumni"
@@ -22,7 +22,7 @@ class Alumni(db.Model):
     linkedin_profile = db.Column(db.String(200))
     phone_number = db.Column(db.String(20))
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
 
     user = db.relationship("User", backref=db.backref(
         "alumni_profile",

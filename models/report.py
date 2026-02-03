@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from utils.datetime_defaults import utc_now
 
 class Report(db.Model):
     __tablename__ = "reports"
@@ -31,8 +31,8 @@ class Report(db.Model):
     report_from = db.Column(db.DateTime)
     report_to = db.Column(db.DateTime)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     generator = db.relationship("User", backref="generated_reports")
 

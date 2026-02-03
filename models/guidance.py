@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from utils.datetime_defaults import utc_now
 
 class Guidance(db.Model):
     __tablename__ = "guidances"
@@ -35,8 +35,8 @@ class Guidance(db.Model):
         default="active"
     )  # active, completed, archived
     
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
     # Additional fields
     duration_weeks = db.Column(db.Integer, default=4)  # Expected duration in weeks

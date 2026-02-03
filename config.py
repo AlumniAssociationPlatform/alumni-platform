@@ -17,8 +17,11 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Timezone configuration for consistent handling across local and deployed instances
-    # Use UTC for all database operations
+    # All timestamps are stored in UTC in the database
     TIMEZONE = "UTC"
+    # Local timezone for displaying timestamps to users
+    # Change this to match your local timezone (e.g., 'Asia/Kolkata', 'America/New_York')
+    TIMEZONE_LOCAL = os.getenv("TIMEZONE_LOCAL", "Asia/Kolkata")
     SQLALCHEMY_ECHO = False
     
     # MySQL connection timezone configuration
@@ -26,7 +29,9 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {
         "connect_args": {
             "sql_mode": "STRICT_TRANS_TABLES",
-        }
+            "init_command": "SET SESSION sql_mode='STRICT_TRANS_TABLES', time_zone='+00:00'",
+        },
+        "pool_pre_ping": True,
     }
 
     # File upload configuration

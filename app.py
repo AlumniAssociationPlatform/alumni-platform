@@ -57,9 +57,9 @@ try:
 
     @app.template_filter("datetime")
     def format_datetime(value, format="%d %b %Y, %I:%M %p"):
-        if value is None:
-            return ""
-        return value.strftime(format)
+        """Template filter to format datetime in local timezone."""
+        from utils.timezone_helper import format_datetime_local
+        return format_datetime_local(value, format)
 
     # Context processor for sidebar counts
     @app.context_processor
@@ -73,12 +73,12 @@ try:
         from models.alumni import Alumni
         from models.guidance import Guidance
         from utils.user_role_enum import UserRole
-        from datetime import datetime
+        from utils.timezone_helper import get_utc_now
         from sqlalchemy import and_
         
         try:
             # Get current time for filtering upcoming seminars
-            current_time = datetime.utcnow()
+            current_time = get_utc_now()
             
             counts = {
                 'total_announcements': Announcement.query.count(),

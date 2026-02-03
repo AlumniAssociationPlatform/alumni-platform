@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from utils.datetime_defaults import utc_now
 
 class Seminar(db.Model):
     __tablename__ = "seminars"
@@ -23,8 +23,8 @@ class Seminar(db.Model):
     # Department for filtering (from faculty)
     department = db.Column(db.String(100), nullable=False)
     
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     faculty = db.relationship("Faculty", backref=db.backref("seminars", lazy=True, cascade="all, delete-orphan"))

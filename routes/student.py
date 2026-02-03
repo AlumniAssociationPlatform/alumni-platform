@@ -5,7 +5,7 @@ from models.guidance import Guidance
 from models.announcement import Announcement
 from models.user import User
 from extensions import db
-from datetime import datetime
+from utils.timezone_helper import get_utc_now
 
 student = Blueprint("student", __name__, url_prefix="/student")
 
@@ -48,7 +48,7 @@ def dashboard():
     # Get upcoming seminars for student's department
     upcoming_seminars = []
     if student_profile:
-        current_time = datetime.utcnow()
+        current_time = get_utc_now()
         upcoming_seminars = Seminar.query.filter(
             and_(
                 Seminar.department == student_profile.department,
@@ -646,8 +646,14 @@ def seminars():
         return redirect(url_for("student.dashboard"))
     
     # Get only upcoming seminars for student's department (date >= now)
-    from datetime import datetime
-    current_time = datetime.utcnow()
+    current_time = get_utc_now()
+    
+    seminars_list = Seminar.query.filter(
+        and_(
+            Seminar.department == student_profile.department,
+            Seminar.date >= current_time
+        )
+    ).order_by(Seminar.date.asc()).all()
     
     seminars_list = Seminar.query.filter(
         and_(
@@ -680,7 +686,7 @@ def view_seminar(seminar_id):
         return redirect(url_for("student.seminars"))
     
     # Check if seminar date is not in the past
-    current_time = datetime.utcnow()
+    current_time = get_utc_now()
     if seminar.date < current_time:
         flash("This seminar has already occurred.", "warning")
         return redirect(url_for("student.seminars"))

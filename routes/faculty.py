@@ -4,6 +4,8 @@ from utils.user_role_enum import UserRole
 from extensions import db
 from models.announcement import Announcement
 from sqlalchemy import func
+from utils.timezone_helper import get_utc_now
+from datetime import datetime
 
 faculty = Blueprint("faculty", __name__, url_prefix="/faculty")
 
@@ -493,7 +495,7 @@ def seminars():
                 return redirect(url_for("faculty.seminars"))
             
             # Validate that seminar date is not in the past
-            current_time = datetime.utcnow()
+            current_time = get_utc_now()
             if seminar_datetime < current_time:
                 flash("Seminar date and time must be in the future. Please select today or a later date.", "error")
                 return redirect(url_for("faculty.seminars"))

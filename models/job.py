@@ -1,5 +1,5 @@
 from extensions import db
-from datetime import datetime
+from utils.datetime_defaults import utc_now
 
 class Job(db.Model):
     __tablename__ = "jobs"
@@ -35,8 +35,8 @@ class Job(db.Model):
     is_verified = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
 
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
 
     # Relationships
     poster = db.relationship("User", backref="posted_jobs")
