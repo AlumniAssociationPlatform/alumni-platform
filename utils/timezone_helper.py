@@ -3,7 +3,7 @@ Timezone helper utilities for handling UTC datetime conversion to local timezone
 All timestamps are stored in UTC in the database, but can be displayed in local timezone when needed.
 """
 
-from datetime import datetime
+from datetime import datetime, date, time
 import pytz
 from flask import current_app
 
@@ -142,9 +142,10 @@ def ensure_timezone_aware(dt, assume_utc=True):
     """
     Ensure a datetime object is timezone-aware.
     If the datetime is naive, add timezone information.
+    Handles both datetime.date and datetime.datetime objects.
     
     Args:
-        dt: A datetime object (may be naive or aware)
+        dt: A datetime or date object (may be naive or aware)
         assume_utc: If True and dt is naive, assume it's UTC (default: True)
         
     Returns:
@@ -153,8 +154,12 @@ def ensure_timezone_aware(dt, assume_utc=True):
     if dt is None:
         return None
     
+    # Convert date objects to datetime at midnight UTC
+    if isinstance(dt, date) and not isinstance(dt, datetime):
+        dt = datetime.combine(dt, time.min)
+    
     # If already timezone-aware, return as-is
-    if dt.tzinfo is not None:
+    if hasattr(dt, 'tzinfo') and dt.tzinfo is not None:
         return dt
     
     # If naive, add timezone info

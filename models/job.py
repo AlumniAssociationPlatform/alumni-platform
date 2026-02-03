@@ -25,10 +25,10 @@ class Job(db.Model):
     # Contact Information
     contact_email = db.Column(db.String(150))
     contact_phone = db.Column(db.String(20))
+    company_website = db.Column(db.String(500))  # Company website URL
     
-    # Banner/Image Upload
-    banner_image = db.Column(db.String(500))  # Store filename/path
-    is_from_banner = db.Column(db.Boolean, default=False)  # Flag to indicate if posted from banner
+    # Job Poster Image (Optional)
+    job_poster = db.Column(db.String(500))  # Store filename/path for optional job poster image
 
     # Tracking Information
     posted_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)

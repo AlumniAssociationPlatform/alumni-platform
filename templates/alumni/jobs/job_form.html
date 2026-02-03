@@ -23,101 +23,10 @@
         ]'></div>
         {% endif %}
 
-        <!-- Toggle Mode Section -->
-        <div class="form-section" style="background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
-            <h5 class="mb-3">Choose How to Post</h5>
-            <div class="btn-group w-100" role="group">
-                <input type="radio" class="btn-check" name="post-mode" id="mode-form" value="form" {% if not job or not job.is_from_banner %}checked{% endif %}>
-                <label class="btn btn-outline-primary" for="mode-form" style="flex: 1;">
-                    <i class="bi bi-pencil-square"></i> Fill Form Manually
-                </label>
-                
-                <input type="radio" class="btn-check" name="post-mode" id="mode-banner" value="banner" {% if job and job.is_from_banner %}checked{% endif %}>
-                <label class="btn btn-outline-primary" for="mode-banner" style="flex: 1;">
-                    <i class="bi bi-image"></i> Upload Banner/Image
-                </label>
-            </div>
-            <small class="form-text mt-2" style="display: block; color: #666;">
-                Choose either to fill the form manually or upload a job/internship banner image for admin review
-            </small>
-        </div>
+
 
         <!-- Main Form -->
         <form method="POST" id="jobForm" novalidate class="job-form-wrapper">
-
-            <!-- Banner Upload Section (Hidden by default) -->
-            <div id="bannerSection" style="display: {% if job and job.is_from_banner %}block{% else %}none{% endif %};">
-                <div class="form-section">
-                    <div class="form-section-header">
-                        <i class="bi bi-image"></i> Upload Job/Internship Banner
-                    </div>
-
-                    <div class="form-group-row">
-                        <div class="form-group">
-                            <label for="banner_title" class="form-label">
-                                Job/Internship Title
-                                <span class="required-mark">*</span>
-                            </label>
-                            <input type="text" class="form-control" id="banner_title" name="banner_title"
-                                value="{{ job.title if job else '' }}"
-                                placeholder="e.g., Senior Software Engineer, Internship - Web Development"
-                                {% if not job %}required{% endif %}>
-                            <small class="form-text">Enter the job/internship title from the banner</small>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="banner_company" class="form-label">
-                                Company Name
-                                <span class="required-mark">*</span>
-                            </label>
-                            <input type="text" class="form-control" id="banner_company" name="banner_company"
-                                value="{{ job.company if job else '' }}"
-                                placeholder="e.g., Acme Corp, Tech Solutions Inc."
-                                {% if not job %}required{% endif %}>
-                            <small class="form-text">Enter the company name from the banner</small>
-                        </div>
-                    </div>
-
-                    <div class="form-group-row full">
-                        <div class="form-group">
-                            <label for="banner_image" class="form-label">
-                                Job/Internship Banner or Flyer
-                                <span class="required-mark">*</span>
-                            </label>
-                            <div class="banner-upload-area">
-                                <input type="file" class="form-control d-none" id="banner_image" name="banner_image" 
-                                    accept="image/*" {% if not job %}required{% endif %}>
-                                <div class="upload-placeholder" id="uploadPlaceholder" {% if job and job.banner_image %}style="display: none;"{% endif %}>
-                                    <i class="bi bi-cloud-arrow-up" style="font-size: 2.5rem; color: #0d6efd; margin-bottom: 10px;"></i>
-                                    <p style="font-size: 1.1rem; margin-bottom: 5px;">Click to upload or drag and drop</p>
-                                    <small style="color: #666;">PNG, JPG, GIF up to 10MB</small>
-                                </div>
-                                <div id="imagePreview" style="display: {% if job and job.banner_image %}block{% else %}none{% endif %}; text-align: center;">
-                                    <img id="previewImg" src="{% if job and job.banner_image %}{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}{% endif %}" alt="Preview" style="max-width: 100%; max-height: 400px; border-radius: 8px; margin-top: 10px;">
-                                    <p class="mt-2" id="fileName">{% if job and job.banner_image %}{{ job.banner_image.split('_', 1)[1] if '_' in job.banner_image else job.banner_image }}{% endif %}</p>
-                                    {% if job and job.banner_image %}
-                                    <button type="button" class="btn btn-sm btn-danger mt-2" id="changeImageBtn">
-                                        <i class="bi bi-pencil"></i> Change Image
-                                    </button>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <small class="form-text" style="display: block; margin-top: 10px;">
-                                Upload the job or internship posting banner/flyer. The admin will review it and post the job details.
-                            </small>
-                        </div>
-                    </div>
-
-                    <div class="form-group-row full" style="background-color: #e7f3ff; padding: 15px; border-radius: 8px; border-left: 4px solid #0d6efd;">
-                        <p style="margin: 0; font-size: 0.95rem;">
-                            <strong>ℹ️ Note:</strong> Upload the banner image clearly showing all job details. An administrator will review it and post the job accordingly.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Form Fields Section (Form Mode) -->
-            <div id="formSection">
 
             <!-- REQUIRED INFORMATION SECTION -->
             <div class="form-section">
@@ -243,14 +152,6 @@
                         <div class="invalid-feedback"></div>
                         <small class="form-text">Leave blank if no deadline</small>
                     </div>
-
-                    <div class="form-group">
-                        <label for="apply_link" class="form-label">Application Link/URL</label>
-                        <input type="text" class="form-control" id="apply_link" name="apply_link"
-                            value="{{ job.apply_link if job else '' }}" placeholder="https://company.com/apply">
-                        <div class="invalid-feedback"></div>
-                        <small class="form-text">Direct link for applicants</small>
-                    </div>
                 </div>
             </div>
 
@@ -262,19 +163,73 @@
 
                 <div class="form-group-row">
                     <div class="form-group">
-                        <label for="contact_email" class="form-label">Contact Email</label>
+                        <label for="company_website" class="form-label">Company Website URL</label>
+                        <input type="text" class="form-control" id="company_website" name="company_website"
+                            value="{{ job.company_website | default('', true) }}" placeholder="https://company.com">
+                        <div class="invalid-feedback"></div>
+                        <small class="form-text">Company website URL (optional)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contact_email" class="form-label">Email of Company</label>
                         <input type="text" class="form-control" id="contact_email" name="contact_email"
                             value="{{ job.contact_email | default('', true) }}" placeholder="hr@company.com">
                         <div class="invalid-feedback"></div>
                         <small class="form-text">Email for inquiries</small>
                     </div>
+                </div>
 
+                <div class="form-group-row">
                     <div class="form-group">
                         <label for="contact_phone" class="form-label">Contact Phone</label>
                         <input type="tel" class="form-control" id="contact_phone" name="contact_phone"
                             value="{{ job.contact_phone | default('', true) }}" placeholder="+1 (555) 123-4567">
                         <div class="invalid-feedback"></div>
-                        <small class="form-text">Phone number for inquiries</small>
+                        <small class="form-text">Phone number for inquiries (optional)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="apply_link" class="form-label">Job Apply Link</label>
+                        <input type="text" class="form-control" id="apply_link" name="apply_link"
+                            value="{{ job.apply_link if job else '' }}" placeholder="https://company.com/apply">
+                        <div class="invalid-feedback"></div>
+                        <small class="form-text">Direct link for applicants</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- JOB POSTER SECTION -->
+            <div class="form-section">
+                <div class="form-section-header">
+                    <i class="bi bi-file-image"></i> Job Poster (Optional)
+                </div>
+
+                <div class="form-group-row full">
+                    <div class="form-group">
+                        <label for="job_poster" class="form-label">
+                            Upload Job Poster/Flyer
+                        </label>
+                        <div class="banner-upload-area" id="posterUploadArea">
+                            <input type="file" class="form-control d-none" id="job_poster" name="job_poster" 
+                                accept="image/*">
+                            <div class="upload-placeholder" id="posterUploadPlaceholder" {% if job and job.job_poster %}style="display: none;"{% endif %}>
+                                <i class="bi bi-cloud-arrow-up" style="font-size: 2.5rem; color: #0d6efd; margin-bottom: 10px;"></i>
+                                <p style="font-size: 1.1rem; margin-bottom: 5px;">Click to upload or drag and drop</p>
+                                <small style="color: #666;">PNG, JPG, GIF up to 10MB</small>
+                            </div>
+                            <div id="posterImagePreview" style="display: {% if job and job.job_poster %}block{% else %}none{% endif %}; text-align: center;">
+                                <img id="posterPreviewImg" src="{% if job and job.job_poster %}{{ url_for('static', filename='uploads/jobs/' + job.job_poster) }}{% endif %}" alt="Preview" style="max-width: 100%; max-height: 400px; border-radius: 8px; margin-top: 10px;">
+                                <p class="mt-2" id="posterFileName">{% if job and job.job_poster %}{{ job.job_poster.split('_', 1)[1] if '_' in job.job_poster else job.job_poster }}{% endif %}</p>
+                                {% if job and job.job_poster %}
+                                <button type="button" class="btn btn-sm btn-danger mt-2" id="changePosterBtn">
+                                    <i class="bi bi-pencil"></i> Change Poster
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <small class="form-text" style="display: block; margin-top: 10px;">
+                            Upload a job posting flyer or banner image if available. This is optional.
+                        </small>
                     </div>
                 </div>
             </div>
@@ -303,125 +258,110 @@
 <script src="{{ url_for('static', filename='js/job_validation.js') }}"></script>
 
 <script>
-    // Toggle between form mode and banner mode
+    // Job Poster Upload Handler
     document.addEventListener('DOMContentLoaded', function () {
-        const formSection = document.getElementById('formSection');
-        const bannerSection = document.getElementById('bannerSection');
-        const modeForm = document.getElementById('mode-form');
-        const modeBanner = document.getElementById('mode-banner');
+        const jobPosterInput = document.getElementById('job_poster');
+        const posterUploadArea = document.getElementById('posterUploadArea');
+        const posterUploadPlaceholder = document.getElementById('posterUploadPlaceholder');
+        const posterImagePreview = document.getElementById('posterImagePreview');
+        const posterPreviewImg = document.getElementById('posterPreviewImg');
+        const posterFileName = document.getElementById('posterFileName');
+        const changePosterBtn = document.getElementById('changePosterBtn');
         const jobForm = document.getElementById('jobForm');
         const submitBtn = document.getElementById('submitBtn');
-        const bannerInput = document.getElementById('banner_image');
-        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
-        const imagePreview = document.getElementById('imagePreview');
-        const previewImg = document.getElementById('previewImg');
-        const fileName = document.getElementById('fileName');
 
-        // Mode toggle listeners
-        modeForm.addEventListener('change', function() {
-            if (this.checked) {
-                formSection.style.display = 'block';
-                bannerSection.style.display = 'none';
-                // Re-validate form fields when switching to form mode
-                const titleInput = document.getElementById('title');
-                if (titleInput) titleInput.dispatchEvent(new Event('input'));
-                const companyInput = document.getElementById('company');
-                if (companyInput) companyInput.dispatchEvent(new Event('input'));
-                const descriptionInput = document.getElementById('description');
-                if (descriptionInput) descriptionInput.dispatchEvent(new Event('input'));
-                const jobTypeInput = document.getElementById('job_type');
-                if (jobTypeInput) jobTypeInput.dispatchEvent(new Event('change'));
+        // Poster upload area click handler
+        posterUploadArea.addEventListener('click', function(e) {
+            // Only trigger file input if clicked directly on the upload area, not on child elements
+            if (e.target === posterUploadArea || e.target === posterUploadPlaceholder) {
+                jobPosterInput.click();
             }
         });
 
-        modeBanner.addEventListener('change', function() {
-            if (this.checked) {
-                formSection.style.display = 'none';
-                bannerSection.style.display = 'block';
-                // Check if banner image is already selected (from upload or existing)
-                if ((bannerInput.files && bannerInput.files.length > 0) || imagePreview.style.display === 'block') {
-                    submitBtn.disabled = false;
-                } else {
-                    submitBtn.disabled = true;
-                }
-            }
-        });
-
-        // Banner upload preview and drag-drop
-        const bannerArea = document.querySelector('.banner-upload-area');
-        const changeImageBtn = document.getElementById('changeImageBtn');
-        
-        bannerArea.addEventListener('click', function() {
-            bannerInput.click();
-        });
-
-        // Change image button handler
-        if (changeImageBtn) {
-            changeImageBtn.addEventListener('click', function(e) {
+        // Change poster button handler
+        if (changePosterBtn) {
+            changePosterBtn.addEventListener('click', function(e) {
                 e.preventDefault();
-                bannerInput.click();
+                jobPosterInput.click();
             });
         }
 
-        bannerInput.addEventListener('change', function(e) {
-            handleImageSelection(e.target.files[0]);
+        jobPosterInput.addEventListener('change', function(e) {
+            handlePosterSelection(e.target.files[0]);
         });
 
-        // Drag and drop
-        bannerArea.addEventListener('dragover', function(e) {
+        // Drag and drop for poster
+        posterUploadArea.addEventListener('dragover', function(e) {
             e.preventDefault();
-            bannerArea.style.backgroundColor = '#f0f7ff';
-            bannerArea.style.borderColor = '#0d6efd';
+            posterUploadArea.style.backgroundColor = '#f0f7ff';
+            posterUploadArea.style.borderColor = '#0d6efd';
         });
 
-        bannerArea.addEventListener('dragleave', function(e) {
+        posterUploadArea.addEventListener('dragleave', function(e) {
             e.preventDefault();
-            bannerArea.style.backgroundColor = 'transparent';
-            bannerArea.style.borderColor = '#ddd';
+            posterUploadArea.style.backgroundColor = 'transparent';
+            posterUploadArea.style.borderColor = '#ddd';
         });
 
-        bannerArea.addEventListener('drop', function(e) {
+        posterUploadArea.addEventListener('drop', function(e) {
             e.preventDefault();
-            bannerArea.style.backgroundColor = 'transparent';
-            bannerArea.style.borderColor = '#ddd';
+            posterUploadArea.style.backgroundColor = 'transparent';
+            posterUploadArea.style.borderColor = '#ddd';
             const files = e.dataTransfer.files;
             if (files.length > 0) {
-                bannerInput.files = files;
-                handleImageSelection(files[0]);
+                jobPosterInput.files = files;
+                handlePosterSelection(files[0]);
             }
         });
 
-        function handleImageSelection(file) {
+        function handlePosterSelection(file) {
             if (file && file.type.startsWith('image/')) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    fileName.textContent = file.name;
-                    uploadPlaceholder.style.display = 'none';
-                    imagePreview.style.display = 'block';
-                    // Enable submit button when image is selected and in banner mode
-                    if (modeBanner.checked) {
-                        submitBtn.disabled = false;
-                    }
-                    // Add or update the change image button
-                    if (!changeImageBtn) {
-                        const newBtn = document.createElement('button');
-                        newBtn.type = 'button';
-                        newBtn.className = 'btn btn-sm btn-danger mt-2';
-                        newBtn.id = 'changeImageBtn';
-                        newBtn.innerHTML = '<i class="bi bi-pencil"></i> Change Image';
-                        newBtn.addEventListener('click', function(e) {
-                            e.preventDefault();
-                            bannerInput.click();
-                        });
-                        imagePreview.appendChild(newBtn);
-                    }
+                    // Clear previous content and set new image
+                    posterImagePreview.innerHTML = '';
+                    
+                    // Create and display the new image
+                    const imgElement = document.createElement('img');
+                    imgElement.id = 'posterPreviewImg';
+                    imgElement.src = e.target.result;
+                    imgElement.alt = 'Preview';
+                    imgElement.style.cssText = 'max-width: 100%; max-height: 400px; border-radius: 8px; margin-top: 10px; pointer-events: none;';
+                    posterImagePreview.appendChild(imgElement);
+                    
+                    // Create and display the filename
+                    const fileNameElement = document.createElement('p');
+                    fileNameElement.id = 'posterFileName';
+                    fileNameElement.className = 'mt-2';
+                    fileNameElement.textContent = file.name;
+                    fileNameElement.style.pointerEvents = 'none';
+                    posterImagePreview.appendChild(fileNameElement);
+                    
+                    // Create and display the change button
+                    const changeBtn = document.createElement('button');
+                    changeBtn.type = 'button';
+                    changeBtn.className = 'btn btn-sm btn-danger mt-2';
+                    changeBtn.id = 'changePosterBtn';
+                    changeBtn.innerHTML = '<i class="bi bi-pencil"></i> Change Poster';
+                    changeBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        jobPosterInput.click();
+                    });
+                    posterImagePreview.appendChild(changeBtn);
+                    
+                    // Show preview and hide placeholder
+                    posterUploadPlaceholder.style.display = 'none';
+                    posterImagePreview.style.display = 'block';
+                    
+                    // Reset file input value so the same file can be selected again
+                    jobPosterInput.value = '';
+
                 };
                 reader.readAsDataURL(file);
-            } else {
+            } else if (file) {
                 alert('Please select a valid image file');
-                bannerInput.value = '';
-                submitBtn.disabled = true;
+                jobPosterInput.value = '';
             }
         }
 
@@ -430,119 +370,47 @@
             jobForm.addEventListener('submit', function (e) {
                 e.preventDefault();
 
-                const currentMode = document.querySelector('input[name="post-mode"]:checked').value;
-
-                if (currentMode === 'banner') {
-                    // Banner upload submission
-                    const isNewImageSelected = bannerInput.files && bannerInput.files.length > 0;
-                    const isExistingImageDisplayed = imagePreview.style.display === 'block';
-                    
-                    if (!isNewImageSelected && !isExistingImageDisplayed) {
-                        alert('Please select a banner image');
-                        return;
-                    }
-
-                    const bannerTitle = document.getElementById('banner_title').value.trim();
-                    const bannerCompany = document.getElementById('banner_company').value.trim();
-
-                    if (!bannerTitle || !bannerCompany) {
-                        alert('Please enter both job title and company name');
-                        return;
-                    }
-
-                    const formData = new FormData();
-                    if (isNewImageSelected) {
-                        formData.append('banner_image', bannerInput.files[0]);
-                    }
-                    formData.append('banner_title', bannerTitle);
-                    formData.append('banner_company', bannerCompany);
-                    formData.append('submit_mode', 'banner');
-
-                    const jobId = '{{ job.id if job else "" }}';
-                    let submitUrl = '{{ url_for("alumni.create_job") }}';
-
-                    if (jobId) {
-                        submitUrl = '{{ url_for("alumni.edit_job", job_id=0) }}'.replace('0', jobId);
-                    }
-
-                    fetch(submitUrl, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                showSuccessNotification(data.message || 'Banner uploaded successfully! Admin will review it.', 'Success');
-                                setTimeout(() => {
-                                    if (data.redirect_url) {
-                                        window.location.href = data.redirect_url;
-                                    } else {
-                                        window.location.href = '{{ url_for("alumni.jobs_list") }}';
-                                    }
-                                }, 1500);
-                            } else {
-                                showErrorNotification(data.message || 'An error occurred.', 'Error');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            showErrorNotification('An unexpected error occurred. Please try again.', 'Error');
-                        });
-                } else {
-                    // Form mode submission
-                    if (submitBtn.disabled) {
-                        return;
-                    }
-
-                    const formData = new FormData(jobForm);
-                    formData.append('submit_mode', 'form');
-                    const jobId = '{{ job.id if job else "" }}';
-                    let submitUrl = '{{ url_for("alumni.create_job") }}';
-                    let successMessage = 'Job/Internship posted successfully!';
-
-                    if (jobId) {
-                        submitUrl = '{{ url_for("alumni.edit_job", job_id=0) }}'.replace('0', jobId);
-                        successMessage = 'Job/Internship updated successfully!';
-                    }
-
-                    fetch(submitUrl, {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                showSuccessNotification(data.message || successMessage, 'Success');
-                                setTimeout(() => {
-                                    if (data.redirect_url) {
-                                        window.location.href = data.redirect_url;
-                                    } else {
-                                        window.location.href = '{{ url_for("alumni.jobs_list") }}';
-                                    }
-                                }, 1500);
-                            } else {
-                                showErrorNotification(data.message || 'An error occurred.', 'Error');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            showErrorNotification('An unexpected error occurred. Please try again.', 'Error');
-                        });
+                if (submitBtn.disabled) {
+                    return;
                 }
-            });
-        }
 
-        // Initialize form mode based on job data
-        const isFromBanner = '{{ job.is_from_banner if job else "False" }}' === 'True';
-        if (isFromBanner && modeBanner) {
-            modeBanner.checked = true;
-            modeBanner.dispatchEvent(new Event('change'));
+                const formData = new FormData(jobForm);
+                const jobId = '{{ job.id if job else "" }}';
+                let submitUrl = '{{ url_for("alumni.create_job") }}';
+                let successMessage = 'Job/Internship posted successfully!';
+
+                if (jobId) {
+                    submitUrl = '{{ url_for("alumni.edit_job", job_id=0) }}'.replace('0', jobId);
+                    successMessage = 'Job/Internship updated successfully!';
+                }
+
+                fetch(submitUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showSuccessNotification(data.message || successMessage, 'Success');
+                            setTimeout(() => {
+                                if (data.redirect_url) {
+                                    window.location.href = data.redirect_url;
+                                } else {
+                                    window.location.href = '{{ url_for("alumni.jobs_list") }}';
+                                }
+                            }, 1500);
+                        } else {
+                            showErrorNotification(data.message || 'An error occurred.', 'Error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showErrorNotification('An unexpected error occurred. Please try again.', 'Error');
+                    });
+            });
         }
     });
 </script>

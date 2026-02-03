@@ -159,6 +159,22 @@
                                 </span>
                                 {% endif %}
                             </div>
+
+                            <!-- Contact Information -->
+                            <div class="job-meta" style="margin-top: 8px;">
+                                {% if job.contact_email %}
+                                <span>
+                                    <i class="bi bi-envelope"></i>
+                                    <a href="mailto:{{ job.contact_email }}" class="text-decoration-none">{{ job.contact_email }}</a>
+                                </span>
+                                {% endif %}
+                                {% if job.apply_link %}
+                                <span>
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                    <a href="{{ job.apply_link }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none text-success fw-bold">Apply Link</a>
+                                </span>
+                                {% endif %}
+                            </div>
                         </div>
 
                         <!-- Action Button -->

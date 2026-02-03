@@ -87,6 +87,13 @@
                             {% endif %}
                         </p>
                         
+                        <!-- View Details Link -->
+                        <div class="mb-3">
+                            <a href="{{ url_for('student.event_detail', event_id=event.id) }}" class="btn btn-outline-secondary w-100" style="border-radius: 10px; padding: 0.7rem; font-weight: 600; border: 2px solid #dee2e6;">
+                                <i class="bi bi-eye"></i> View Details
+                            </a>
+                        </div>
+                        
                         <!-- Registration Status & Button -->
                         {% if event.id in registered_event_ids %}
                             <div class="alert alert-success py-2 mb-2 d-flex align-items-center" style="border-radius: 8px; border: none; background: #d1e7dd; color: #0f5132;">

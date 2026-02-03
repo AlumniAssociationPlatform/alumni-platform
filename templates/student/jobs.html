@@ -53,7 +53,7 @@
                     {% endif %}
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title">{{ job.title }}</h5>
+                    <h5>{{ job.title }}</h5>
                     <p class="card-text text-muted fw-bold">
                         <i class="bi bi-building"></i> {{ job.company }}
                     </p>
@@ -73,8 +73,26 @@
                         <i class="bi bi-calendar"></i> Posted: {{ job.created_at.strftime('%d %b %Y') }}
                     </div>
                 </div>
-                {% if job.banner_image %}
-                <div class="card-img-bottom" style="height: 200px; background-image: url('{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}'); background-size: cover; background-position: center;"></div>
+                {% if job.job_poster %}
+                {# Show poster as background if it's an image, otherwise show a small PDF icon/link #}
+                {% set poster_ext = job.job_poster.rsplit('.', 1)[-1].lower() if job.job_poster and '.' in job.job_poster else '' %}
+                {% if poster_ext in ['jpg','jpeg','png','gif','webp'] %}
+                <div class="card-img-bottom" style="height: 200px; background-image: url('{{ url_for('static', filename='uploads/jobs/' + job.job_poster) }}'); background-size: cover; background-position: center;"></div>
+                {% elif poster_ext == 'pdf' %}
+                <div class="card-img-bottom d-flex align-items-center justify-content-center" style="height: 200px; background: #f8f9fa;">
+                    <a href="{{ url_for('static', filename='uploads/jobs/' + job.job_poster) }}" target="_blank" class="text-decoration-none text-muted">
+                        <i class="bi bi-file-earmark-pdf" style="font-size: 2rem; color: #dc3545;"></i>
+                        <div class="small">View Poster (PDF)</div>
+                    </a>
+                </div>
+                {% else %}
+                <div class="card-img-bottom d-flex align-items-center justify-content-center" style="height: 200px; background: #f8f9fa;">
+                    <a href="{{ url_for('static', filename='uploads/jobs/' + job.job_poster) }}" target="_blank" class="text-decoration-none text-muted">
+                        <i class="bi bi-file-earmark" style="font-size: 1.6rem;"></i>
+                        <div class="small">View Poster</div>
+                    </a>
+                </div>
+                {% endif %}
                 {% endif %}
                 <div class="card-footer bg-light border-0">
                     <a href="{{ url_for('student.view_job', job_id=job.id) }}" class="btn btn-sm btn-primary w-100">

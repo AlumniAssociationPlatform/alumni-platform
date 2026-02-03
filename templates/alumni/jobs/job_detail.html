@@ -110,6 +110,16 @@
         <p>{{ job.description }}</p>
     </div>
 
+    <!-- Job Poster Section -->
+    {% if job.job_poster %}
+    <div class="job-description-section mb-4">
+        <h5><i class="bi bi-file-image"></i> Job Poster</h5>
+        <div style="text-align: center;">
+            <img src="{{ url_for('static', filename='uploads/jobs/' + job.job_poster) }}" alt="Job Poster" style="max-width: 100%; max-height: 600px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Additional Information -->
     {% if job.eligibility or job.department %}
     <div class="job-description-section mb-4">

@@ -588,169 +588,143 @@ def toggle_job_status(job_id):
 @placement.route("/cell/jobs/create", methods=["GET", "POST"])
 @placement_cell_required
 def create_job_cell():
-    """Placement cell user creating a new job/internship posting (same behaviour as alumni)."""
+    """Placement cell user creating a new job/internship posting."""
     if request.method == "POST":
         try:
-            submit_mode = request.form.get("submit_mode", "form").strip()
-
-            if submit_mode == "banner":
-                if 'banner_image' not in request.files:
-                    error_msg = "No image file provided."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("placement.create_job_cell"))
-
-                file = request.files['banner_image']
-
-                if file.filename == '':
-                    error_msg = "No image file selected."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("placement.create_job_cell"))
-
-                allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
-                if not ('.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
-                    error_msg = "Please upload a valid image file (PNG, JPG, JPEG, GIF)."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("placement.create_job_cell"))
-
-                import os
-                from werkzeug.utils import secure_filename
-
-                upload_folder = 'static/uploads/jobs'
-                os.makedirs(upload_folder, exist_ok=True)
-
-                filename = secure_filename(file.filename)
-                import time
-                filename = f"{int(time.time())}_{filename}"
-                file_path = os.path.join(upload_folder, filename)
-                file.save(file_path)
-
-                banner_title = request.form.get("banner_title", "").strip()
-                banner_company = request.form.get("banner_company", "").strip()
-
-                if not banner_title or not banner_company:
-                    os.remove(file_path)
-                    error_msg = "Please enter both job title and company name."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("placement.create_job_cell"))
-
-                new_job = Job(
-                    title=banner_title,
-                    company=banner_company,
-                    description="",
-                    job_type="Job",
-                    banner_image=filename,
-                    is_from_banner=True,
-                    posted_by=current_user.id,
-                    is_active=False,
-                    is_verified=False
-                )
-
-                db.session.add(new_job)
-                db.session.commit()
-
-                success_msg = "Banner uploaded successfully! Admin will review it and post the job details."
-
+            # Validate required fields
+            title = request.form.get("title", "").strip()
+            company = request.form.get("company", "").strip()
+            description = request.form.get("description", "").strip()
+            job_type = request.form.get("job_type", "").strip()
+            
+            if not all([title, company, description, job_type]):
+                error_msg = "Please fill in all required fields."
                 if request.headers.get('Accept') == 'application/json':
-                    return jsonify({
-                        "success": True,
-                        "message": success_msg,
-                        "redirect_url": url_for("placement.jobs_list_cell")
-                    })
-
-                flash(success_msg, "success")
-                return redirect(url_for("placement.jobs_list_cell"))
-
-            else:
-                title = request.form.get("title", "").strip()
-                company = request.form.get("company", "").strip()
-                description = request.form.get("description", "").strip()
-                job_type = request.form.get("job_type", "").strip()
-
-                if not all([title, company, description, job_type]):
-                    error_msg = "Please fill in all required fields."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("placement.create_job_cell"))
-
-                if job_type not in ["Job", "Internship", "Both"]:
-                    error_msg = "Invalid job type selected."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("placement.create_job_cell"))
-
-                location = request.form.get("location", "").strip() or None
-                salary_range = request.form.get("salary_range", "").strip() or None
-                eligibility = request.form.get("eligibility", "").strip() or None
-                department = request.form.get("department", "").strip() or None
-                contact_email = request.form.get("contact_email", "").strip() or None
-                contact_phone = request.form.get("contact_phone", "").strip() or None
-                apply_link = request.form.get("apply_link", "").strip() or None
-
-                deadline_str = request.form.get("application_deadline", "").strip()
-                application_deadline = None
-                if deadline_str:
-                    try:
-                        application_deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
-                    except ValueError:
-                        error_msg = "Invalid date format for application deadline."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("placement.create_job_cell"))
-
-                new_job = Job(
-                    title=title,
-                    company=company,
-                    description=description,
-                    job_type=job_type,
-                    location=location,
-                    salary_range=salary_range,
-                    eligibility=eligibility,
-                    department=department,
-                    contact_email=contact_email,
-                    contact_phone=contact_phone,
-                    apply_link=apply_link,
-                    application_deadline=application_deadline,
-                    posted_by=current_user.id,
-                    is_active=True
-                )
-
-                db.session.add(new_job)
-                db.session.commit()
-
-                success_msg = f"Job/Internship '{title}' posted successfully!"
-
+                    return jsonify({"success": False, "message": error_msg}), 400
+                flash(error_msg, "error")
+                return redirect(url_for("placement.create_job_cell"))
+            
+            if job_type not in ["Job", "Internship", "Both"]:
+                error_msg = "Invalid job type selected."
                 if request.headers.get('Accept') == 'application/json':
-                    return jsonify({
-                        "success": True,
-                        "message": success_msg,
-                        "redirect_url": url_for("placement.jobs_list_cell")
-                    })
-
-                flash(success_msg, "success")
-                return redirect(url_for("placement.jobs_list_cell"))
-
-        except Exception as e:
-            db.session.rollback()
-            error_msg = f"An error occurred: {str(e)}"
+                    return jsonify({"success": False, "message": error_msg}), 400
+                flash(error_msg, "error")
+                return redirect(url_for("placement.create_job_cell"))
+            
+            # Parse optional fields
+            location = request.form.get("location", "").strip() or None
+            salary_range = request.form.get("salary_range", "").strip() or None
+            eligibility = request.form.get("eligibility", "").strip() or None
+            department = request.form.get("department", "").strip() or None
+            contact_email = request.form.get("contact_email", "").strip() or None
+            contact_phone = request.form.get("contact_phone", "").strip() or None
+            apply_link = request.form.get("apply_link", "").strip() or None
+            company_website = request.form.get("company_website", "").strip() or None
+            
+            # Handle optional job poster image upload
+            job_poster = None
+            if 'job_poster' in request.files:
+                file = request.files['job_poster']
+                if file and file.filename != '':
+                    # Validate file type
+                    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+                    if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions:
+                        try:
+                            import os
+                            from werkzeug.utils import secure_filename
+                            import time
+                            
+                            upload_folder = 'static/uploads/jobs'
+                            os.makedirs(upload_folder, exist_ok=True)
+                            
+                            filename = secure_filename(file.filename)
+                            # Add timestamp to avoid filename conflicts
+                            filename = f"{int(time.time())}_{filename}"
+                            file_path = os.path.join(upload_folder, filename)
+                            file.save(file_path)
+                            job_poster = filename
+                        except Exception as file_error:
+                            # Log error but continue without poster
+                            print(f"Error saving job poster: {str(file_error)}")
+            
+            # Parse deadline
+            deadline_str = request.form.get("application_deadline", "").strip()
+            application_deadline = None
+            if deadline_str:
+                try:
+                    application_deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+                except ValueError:
+                    error_msg = "Invalid date format for application deadline."
+                    if request.headers.get('Accept') == 'application/json':
+                        return jsonify({"success": False, "message": error_msg}), 400
+                    flash(error_msg, "error")
+                    return redirect(url_for("placement.create_job_cell"))
+            
+            # Create new job
+            new_job = Job(
+                title=title,
+                company=company,
+                description=description,
+                job_type=job_type,
+                location=location,
+                salary_range=salary_range,
+                eligibility=eligibility,
+                department=department,
+                contact_email=contact_email,
+                contact_phone=contact_phone,
+                apply_link=apply_link,
+                company_website=company_website,
+                job_poster=job_poster,
+                application_deadline=application_deadline,
+                posted_by=current_user.id,
+                is_active=True
+            )
+            
+            db.session.add(new_job)
+            db.session.commit()
+            
+            success_msg = f"Job/Internship '{title}' posted successfully!"
+            
+            # Check if request expects JSON (AJAX)
             if request.headers.get('Accept') == 'application/json':
                 return jsonify({
-                    "success": False,
-                    "message": error_msg
-                }), 400
+                    "success": True,
+                    "message": success_msg,
+                    "redirect_url": url_for("placement.jobs_list_cell")
+                })
+            
+            flash(success_msg, "success")
+            return redirect(url_for("placement.jobs_list_cell"))
+            
+        except Exception as e:
+            db.session.rollback()
+            import traceback
+            error_msg = f"An error occurred: {str(e)}"
+            traceback.print_exc()
+            
+            # Always return JSON if Accept header indicates it or it's a POST request
+            if request.headers.get('Accept') == 'application/json':
+                try:
+                    return jsonify({
+                        "success": False,
+                        "message": error_msg
+                    }), 400
+                except Exception as json_error:
+                    return '{"success": false, "message": "An unexpected server error occurred"}', 500, {'Content-Type': 'application/json'}
+            
+            # If it's a POST request but not expecting JSON, still try to return JSON for AJAX safety
+            if request.method == 'POST':
+                try:
+                    return jsonify({
+                        "success": False,
+                        "message": error_msg
+                    }), 400
+                except Exception as json_error:
+                    return '{"success": false, "message": "An unexpected server error occurred"}', 500, {'Content-Type': 'application/json'}
+            
             flash(error_msg, "error")
             return redirect(url_for("placement.create_job_cell"))
-
+    
     return render_template("placement/job_form.html", job=None)
 
 
@@ -760,136 +734,128 @@ def create_job_cell():
 @placement.route("/cell/jobs/<int:job_id>/edit", methods=["GET", "POST"])
 @placement_cell_required
 def edit_job_cell(job_id):
+    """Edit an existing job/internship posting"""
     job = Job.query.get_or_404(job_id)
 
-    # Only allow placement cell users to edit; placement cell can edit any job
     if request.method == "POST":
         try:
-            submit_mode = request.form.get("submit_mode", "form").strip()
-
-            if submit_mode == "banner":
-                file = request.files.get('banner_image')
-                banner_title = request.form.get("banner_title", "").strip()
-                banner_company = request.form.get("banner_company", "").strip()
-
-                if not banner_title or not banner_company:
-                    error_msg = "Please enter both job title and company name."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("placement.edit_job_cell", job_id=job_id))
-
-                if file and getattr(file, 'filename', ''):
+            # Validate required fields
+            title = request.form.get("title", "").strip()
+            company = request.form.get("company", "").strip()
+            description = request.form.get("description", "").strip()
+            job_type = request.form.get("job_type", "").strip()
+            
+            if not all([title, company, description, job_type]):
+                error_msg = "Please fill in all required fields."
+                if request.headers.get('Accept') == 'application/json':
+                    return jsonify({"success": False, "message": error_msg}), 400
+                flash(error_msg, "error")
+                return redirect(url_for("placement.edit_job_cell", job_id=job_id))
+            
+            if job_type not in ["Job", "Internship", "Both"]:
+                error_msg = "Invalid job type selected."
+                if request.headers.get('Accept') == 'application/json':
+                    return jsonify({"success": False, "message": error_msg}), 400
+                flash(error_msg, "error")
+                return redirect(url_for("placement.edit_job_cell", job_id=job_id))
+            
+            # Update basic job information
+            job.title = title
+            job.company = company
+            job.description = description
+            job.job_type = job_type
+            job.location = request.form.get("location", "").strip() or None
+            job.salary_range = request.form.get("salary_range", "").strip() or None
+            job.eligibility = request.form.get("eligibility", "").strip() or None
+            job.department = request.form.get("department", "").strip() or None
+            job.contact_email = request.form.get("contact_email", "").strip() or None
+            job.contact_phone = request.form.get("contact_phone", "").strip() or None
+            job.apply_link = request.form.get("apply_link", "").strip() or None
+            job.company_website = request.form.get("company_website", "").strip() or None
+            
+            # Handle optional job poster image upload
+            if 'job_poster' in request.files:
+                file = request.files['job_poster']
+                if file and file.filename != '':
+                    # Validate file type
                     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
-                    if not ('.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
-                        error_msg = "Please upload a valid image file (PNG, JPG, JPEG, GIF)."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("placement.edit_job_cell", job_id=job_id))
-
-                    import os
-                    from werkzeug.utils import secure_filename
-                    upload_folder = 'static/uploads/jobs'
-                    os.makedirs(upload_folder, exist_ok=True)
-
-                    filename = secure_filename(file.filename)
-                    import time
-                    filename = f"{int(time.time())}_{filename}"
-                    file_path = os.path.join(upload_folder, filename)
-                    file.save(file_path)
-
-                    job.banner_image = filename
-                else:
-                    if not job.banner_image:
-                        error_msg = "No image file provided. Please upload a banner image."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("placement.edit_job_cell", job_id=job_id))
-
-                job.title = banner_title
-                job.company = banner_company
-                job.description = job.description or "[Pending Review - Banner image uploaded]"
-                job.job_type = job.job_type or "Job"
-                job.is_from_banner = True
-                job.is_active = False
-                job.is_verified = False
-
-                db.session.commit()
-
-                success_msg = "Banner updated successfully! Admin will review it and update the job details."
-
-                if request.headers.get('Accept') == 'application/json':
-                    return jsonify({"success": True, "message": success_msg, "redirect_url": url_for("placement.jobs_list_cell")})
-
-                flash(success_msg, "success")
-                return redirect(url_for("placement.jobs_list_cell"))
-
+                    if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions:
+                        try:
+                            import os
+                            from werkzeug.utils import secure_filename
+                            import time
+                            
+                            upload_folder = 'static/uploads/jobs'
+                            os.makedirs(upload_folder, exist_ok=True)
+                            
+                            filename = secure_filename(file.filename)
+                            # Add timestamp to avoid filename conflicts
+                            filename = f"{int(time.time())}_{filename}"
+                            file_path = os.path.join(upload_folder, filename)
+                            file.save(file_path)
+                            job.job_poster = filename
+                        except Exception as file_error:
+                            # Log error but continue without poster
+                            print(f"Error saving job poster: {str(file_error)}")
+            
+            # Parse deadline
+            deadline_str = request.form.get("application_deadline", "").strip()
+            if deadline_str:
+                try:
+                    job.application_deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+                except ValueError:
+                    error_msg = "Invalid date format for application deadline."
+                    if request.headers.get('Accept') == 'application/json':
+                        return jsonify({"success": False, "message": error_msg}), 400
+                    flash(error_msg, "error")
+                    return redirect(url_for("placement.edit_job_cell", job_id=job_id))
             else:
-                title = request.form.get("title", "").strip()
-                company = request.form.get("company", "").strip()
-                description = request.form.get("description", "").strip()
-                job_type = request.form.get("job_type", "").strip()
-
-                if not all([title, company, description, job_type]):
-                    error_msg = "Please fill in all required fields."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("placement.edit_job_cell", job_id=job_id))
-
-                if job_type not in ["Job", "Internship", "Both"]:
-                    error_msg = "Invalid job type selected."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("placement.edit_job_cell", job_id=job_id))
-
-                job.title = title
-                job.company = company
-                job.description = description
-                job.job_type = job_type
-                job.location = request.form.get("location", "").strip() or None
-                job.salary_range = request.form.get("salary_range", "").strip() or None
-                job.eligibility = request.form.get("eligibility", "").strip() or None
-                job.department = request.form.get("department", "").strip() or None
-                job.contact_email = request.form.get("contact_email", "").strip() or None
-                job.contact_phone = request.form.get("contact_phone", "").strip() or None
-                job.apply_link = request.form.get("apply_link", "").strip() or None
-                job.is_from_banner = False
-
-                deadline_str = request.form.get("application_deadline", "").strip()
-                if deadline_str:
-                    try:
-                        job.application_deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
-                    except ValueError:
-                        error_msg = "Invalid date format for application deadline."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("placement.edit_job_cell", job_id=job_id))
-                else:
-                    job.application_deadline = None
-
-                db.session.commit()
-
-                success_msg = f"Job/Internship '{title}' updated successfully!"
-
-                if request.headers.get('Accept') == 'application/json':
-                    return jsonify({"success": True, "message": success_msg, "redirect_url": url_for("placement.view_job_cell", job_id=job_id)})
-
-                flash(success_msg, "success")
-                return redirect(url_for("placement.view_job_cell", job_id=job_id))
-
+                job.application_deadline = None
+            
+            db.session.commit()
+            
+            success_msg = f"Job/Internship '{title}' updated successfully!"
+            
+            # Check if request expects JSON (AJAX)
+            if request.headers.get('Accept') == 'application/json':
+                return jsonify({
+                    "success": True,
+                    "message": success_msg,
+                    "redirect_url": url_for("placement.view_job_cell", job_id=job_id)
+                })
+            
+            flash(success_msg, "success")
+            return redirect(url_for("placement.view_job_cell", job_id=job_id))
+            
         except Exception as e:
             db.session.rollback()
+            import traceback
             error_msg = f"An error occurred: {str(e)}"
+            traceback.print_exc()
+            
+            # Always return JSON if Accept header indicates it or it's a POST request
             if request.headers.get('Accept') == 'application/json':
-                return jsonify({"success": False, "message": error_msg}), 400
+                try:
+                    return jsonify({
+                        "success": False,
+                        "message": error_msg
+                    }), 400
+                except Exception as json_error:
+                    return '{"success": false, "message": "An unexpected server error occurred"}', 500, {'Content-Type': 'application/json'}
+            
+            # If it's a POST request but not expecting JSON, still try to return JSON for AJAX safety
+            if request.method == 'POST':
+                try:
+                    return jsonify({
+                        "success": False,
+                        "message": error_msg
+                    }), 400
+                except Exception as json_error:
+                    return '{"success": false, "message": "An unexpected server error occurred"}', 500, {'Content-Type': 'application/json'}
+            
             flash(error_msg, "error")
             return redirect(url_for("placement.edit_job_cell", job_id=job_id))
-
+    
     return render_template("placement/job_form.html", job=job)
 
 
@@ -1218,3 +1184,111 @@ def view_job_applications():
         selected_student_id=student_id,
         selected_status=status
     )
+
+
+# =========================
+# PLACEMENT CELL - UPDATE JOB APPLICATION STATUS
+# =========================
+@placement.route("/cell/job-applications/<int:application_id>/update-status", methods=["POST"])
+@placement_cell_required
+def update_application_status(application_id):
+    """Update the status of a job application (shortlist, reject, select)"""
+    try:
+        application = JobApplication.query.get_or_404(application_id)
+        new_status = request.form.get("status", "").strip()
+        
+        # Validate status
+        valid_statuses = ["applied", "shortlisted", "rejected", "selected"]
+        if new_status not in valid_statuses:
+            flash("Invalid status selected.", "error")
+            return redirect(url_for("placement.view_job_applications"))
+        
+        # Update the application status
+        old_status = application.status
+        application.status = new_status
+        db.session.commit()
+        
+        flash(f"Application status updated from '{old_status}' to '{new_status}'.", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"An error occurred: {str(e)}", "error")
+    
+    return redirect(url_for("placement.view_job_applications"))
+
+
+@placement.route("/cell/job-applications/<int:application_id>/shortlist", methods=["POST"])
+@placement_cell_required
+def shortlist_application(application_id):
+    """Shortlist a job application"""
+    try:
+        application = JobApplication.query.get_or_404(application_id)
+        application.status = "shortlisted"
+        db.session.commit()
+        
+        if request.headers.get('Accept') == 'application/json':
+            return jsonify({
+                "success": True,
+                "message": "Application shortlisted successfully!",
+                "status": "shortlisted"
+            })
+        
+        flash("Application shortlisted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        if request.headers.get('Accept') == 'application/json':
+            return jsonify({"success": False, "message": str(e)}), 400
+        flash(f"An error occurred: {str(e)}", "error")
+    
+    return redirect(request.referrer or url_for("placement.view_job_applications"))
+
+
+@placement.route("/cell/job-applications/<int:application_id>/reject", methods=["POST"])
+@placement_cell_required
+def reject_application(application_id):
+    """Reject a job application"""
+    try:
+        application = JobApplication.query.get_or_404(application_id)
+        application.status = "rejected"
+        db.session.commit()
+        
+        if request.headers.get('Accept') == 'application/json':
+            return jsonify({
+                "success": True,
+                "message": "Application rejected successfully!",
+                "status": "rejected"
+            })
+        
+        flash("Application rejected successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        if request.headers.get('Accept') == 'application/json':
+            return jsonify({"success": False, "message": str(e)}), 400
+        flash(f"An error occurred: {str(e)}", "error")
+    
+    return redirect(request.referrer or url_for("placement.view_job_applications"))
+
+
+@placement.route("/cell/job-applications/<int:application_id>/select", methods=["POST"])
+@placement_cell_required
+def select_application(application_id):
+    """Select/Accept a job application"""
+    try:
+        application = JobApplication.query.get_or_404(application_id)
+        application.status = "selected"
+        db.session.commit()
+        
+        if request.headers.get('Accept') == 'application/json':
+            return jsonify({
+                "success": True,
+                "message": "Application selected successfully!",
+                "status": "selected"
+            })
+        
+        flash("Application selected successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        if request.headers.get('Accept') == 'application/json':
+            return jsonify({"success": False, "message": str(e)}), 400
+        flash(f"An error occurred: {str(e)}", "error")
+    
+    return redirect(request.referrer or url_for("placement.view_job_applications"))

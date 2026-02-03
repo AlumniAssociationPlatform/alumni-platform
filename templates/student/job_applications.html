@@ -1,0 +1,230 @@
+{% extends "student/base.html" %}
+
+{% block title %}My Job Applications | Student - Alumni Portal{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><i class="bi bi-file-earmark-check"></i> My Job Applications</h1>
+    <p>Track the status of your job and internship applications</p>
+</div>
+
+<div class="container-fluid">
+    <!-- Filter by Status -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('student.job_applications') }}" class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label">Filter by Status</label>
+                    <select class="form-select" name="status">
+                        <option value="">All Applications</option>
+                        <option value="applied" {% if status_filter == 'applied' %}selected{% endif %}>Applied</option>
+                        <option value="shortlisted" {% if status_filter == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+                        <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                        <option value="selected" {% if status_filter == 'selected' %}selected{% endif %}>Selected</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-filter"></i> Filter
+                    </button>
+                    <a href="{{ url_for('student.job_applications') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x"></i> Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Applications Table -->
+    {% if applications.items %}
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Job Title</th>
+                        <th>Company</th>
+                        <th>Position Type</th>
+                        <th>Applied On</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for application in applications.items %}
+                    <tr>
+                        <td>
+                            <strong>{{ application.job.title }}</strong>
+                        </td>
+                        <td>
+                            <i class="bi bi-building"></i> {{ application.job.company }}
+                        </td>
+                        <td>
+                            {% if application.job.job_type == "Internship" %}
+                                <span class="badge bg-info">Internship</span>
+                            {% elif application.job.job_type == "Job" %}
+                                <span class="badge bg-success">Job</span>
+                            {% else %}
+                                <span class="badge bg-primary">Both</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">
+                                {{ application.applied_at.strftime('%d %b %Y') }}
+                                <br>
+                                {{ application.applied_at.strftime('%H:%M') }}
+                            </small>
+                        </td>
+                        <td>
+                            {% if application.status == 'applied' %}
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-check-circle"></i> Applied
+                                </span>
+                            {% elif application.status == 'shortlisted' %}
+                                <span class="badge bg-info">
+                                    <i class="bi bi-star-fill"></i> Shortlisted
+                                </span>
+                            {% elif application.status == 'rejected' %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle"></i> Rejected
+                                </span>
+                            {% elif application.status == 'selected' %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check2-circle"></i> Selected
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('student.view_application', application_id=application.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye"></i> View Details
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if applications.pages > 1 %}
+        <nav aria-label="Page navigation" class="d-flex justify-content-center p-3">
+            <ul class="pagination mb-0">
+                {% if applications.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('student.job_applications', page=1{% if status_filter %}, status=status_filter{% endif %}) }}">
+                        First
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('student.job_applications', page=applications.prev_num{% if status_filter %}, status=status_filter{% endif %}) }}">
+                        Previous
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for page_num in applications.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num == applications.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('student.job_applications', page=page_num{% if status_filter %}, status=status_filter{% endif %}) }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endif %}
+                {% endfor %}
+
+                {% if applications.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('student.job_applications', page=applications.next_num{% if status_filter %}, status=status_filter{% endif %}) }}">
+                        Next
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('student.job_applications', page=applications.pages{% if status_filter %}, status=status_filter{% endif %}) }}">
+                        Last
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-5">
+        <i class="bi bi-inbox" style="font-size: 3rem; color: #999; display: block; margin-bottom: 1rem;"></i>
+        <h5>No Applications Found</h5>
+        <p class="text-muted mb-3">
+            {% if status_filter %}
+            You don't have any applications with the selected status.
+            {% else %}
+            You haven't applied to any jobs yet.
+            <a href="{{ url_for('student.jobs') }}" class="text-decoration-none">Browse available jobs</a>
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-briefcase-fill text-primary"></i> Browse More Jobs
+                    </h6>
+                    <p class="card-text small text-muted">
+                        Continue exploring and applying to job postings from alumni.
+                    </p>
+                    <a href="{{ url_for('student.jobs') }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-search"></i> Browse Jobs
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-star-fill text-warning"></i> Get Recommendations
+                    </h6>
+                    <p class="card-text small text-muted">
+                        Request recommendations from faculty members to strengthen your applications.
+                    </p>
+                    <a href="{{ url_for('student.recommendations') if url_for else '#' }}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-plus"></i> Request
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .page-header h1 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-header p {
+        color: #666;
+        margin-bottom: 0;
+    }
+
+    .badge {
+        padding: 0.5rem 0.75rem;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

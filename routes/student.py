@@ -322,6 +322,37 @@ def register_event(event_id):
         return jsonify({"success": False, "message": "Error registering for event."}), 500
 
 
+@student.route("/events/<int:event_id>")
+@student_required
+def event_detail(event_id):
+    """View event details"""
+    from models.event import Event
+    from models.event_participant import EventParticipant
+    from datetime import datetime
+    
+    event = Event.query.get_or_404(event_id)
+    
+    # Check if student is registered
+    is_registered = EventParticipant.query.filter_by(
+        user_id=current_user.id,
+        event_id=event_id
+    ).first() is not None
+    
+    # Get participant count
+    participant_count = EventParticipant.query.filter_by(event_id=event_id).count()
+    
+    # Check if event is past
+    is_past = event.event_date and event.event_date < datetime.now().date()
+    
+    return render_template(
+        "student/event_detail.html",
+        event=event,
+        is_registered=is_registered,
+        participant_count=participant_count,
+        is_past=is_past
+    )
+
+
 @student.route("/events/<int:event_id>/unregister", methods=["POST"])
 @student_required
 def unregister_event(event_id):
@@ -533,6 +564,7 @@ def view_job(job_id):
     """View job/internship details"""
     from models.job import Job
     from models.job_application import JobApplication
+    from datetime import datetime
     
     # Only allow viewing verified and active jobs
     job = Job.query.filter(
@@ -550,7 +582,8 @@ def view_job(job_id):
     return render_template(
         "student/jobs/detail.html",
         job=job,
-        application=application
+        application=application,
+        now=datetime.now()
     )
 
 
@@ -561,6 +594,7 @@ def apply_job(job_id):
     from models.job import Job
     from models.job_application import JobApplication
     from datetime import datetime
+    from sqlalchemy.exc import IntegrityError
     
     job = Job.query.get_or_404(job_id)
     
@@ -572,17 +606,18 @@ def apply_job(job_id):
     if job.application_deadline and job.application_deadline < datetime.now().date():
         return jsonify({"success": False, "message": "Application deadline has passed"}), 400
     
-    # Check if already applied
-    existing_application = JobApplication.query.filter_by(
-        job_id=job_id,
-        student_id=current_user.id
-    ).first()
-    
-    if existing_application:
-        return jsonify({"success": False, "message": "You have already applied for this job"}), 400
-    
+    # Use a transaction with serializable isolation to prevent race conditions
     try:
-        # Create new application
+        # Check if already applied - use SELECT FOR UPDATE to lock the row
+        existing_application = JobApplication.query.filter_by(
+            job_id=job_id,
+            student_id=current_user.id
+        ).with_for_update().first()
+        
+        if existing_application:
+            return jsonify({"success": False, "message": "You have already applied for this job"}), 400
+        
+        # Create new application only if check passed
         application = JobApplication(
             job_id=job_id,
             student_id=current_user.id,
@@ -598,6 +633,9 @@ def apply_job(job_id):
             "redirect_url": url_for("student.view_job", job_id=job_id)
         })
     
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({"success": False, "message": "You have already applied for this job"}), 400
     except Exception as e:
         db.session.rollback()
         return jsonify({"success": False, "message": str(e)}), 500
@@ -762,4 +800,53 @@ def faculty_list():
     faculty = query.paginate(page=page, per_page=20)
     
     return render_template("student/faculty_list.html", faculty=faculty, search=search)
+
+
+# =========================
+# JOB APPLICATIONS
+# =========================
+@student.route("/job-applications")
+@student_required
+def job_applications():
+    """View student's job applications and their status"""
+    from models.job_application import JobApplication
+    from models.job import Job
+    
+    page = request.args.get("page", 1, type=int)
+    status_filter = request.args.get("status", "")
+    
+    # Get current student's applications
+    query = db.session.query(JobApplication).filter(
+        JobApplication.student_id == current_user.id
+    ).join(Job, JobApplication.job_id == Job.id)
+    
+    # Filter by status if specified
+    if status_filter and status_filter in ["applied", "shortlisted", "rejected", "selected"]:
+        query = query.filter(JobApplication.status == status_filter)
+    
+    applications = query.order_by(JobApplication.applied_at.desc()).paginate(page=page, per_page=10)
+    
+    return render_template(
+        "student/job_applications.html",
+        applications=applications,
+        status_filter=status_filter
+    )
+
+
+@student.route("/job-applications/<int:application_id>")
+@student_required
+def view_application(application_id):
+    """View details of a specific job application"""
+    from models.job_application import JobApplication
+    
+    application = JobApplication.query.get_or_404(application_id)
+    
+    # Ensure student can only view their own applications
+    if application.student_id != current_user.id:
+        flash("You don't have permission to view this application.", "error")
+        return redirect(url_for("student.job_applications"))
+    
+    return render_template("student/application_detail.html", application=application)
+
+
 

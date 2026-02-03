@@ -1,0 +1,262 @@
+{% extends "student/base.html" %}
+
+{% block title %}Application Details | Student - Alumni Portal{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Back Button -->
+    <div class="mb-4">
+        <a href="{{ url_for('student.job_applications') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Applications
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Main Application Details -->
+        <div class="col-lg-8">
+            <!-- Job & Company Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h2 class="mb-1">{{ application.job.title }}</h2>
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-building"></i> {{ application.job.company }}
+                            </p>
+                        </div>
+                        {% if application.job.job_type == "Internship" %}
+                            <span class="badge bg-info fs-6">Internship</span>
+                        {% elif application.job.job_type == "Job" %}
+                            <span class="badge bg-success fs-6">Job</span>
+                        {% else %}
+                            <span class="badge bg-primary fs-6">Both</span>
+                        {% endif %}
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted d-block">Job Type</small>
+                            <strong>{{ application.job.job_type }}</strong>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted d-block">Location</small>
+                            <strong>{{ application.job.location or 'Not specified' }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted d-block">Salary Range</small>
+                            <strong>{{ application.job.salary_range or 'Not specified' }}</strong>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted d-block">Department</small>
+                            <strong>{{ application.job.department or 'All' }}</strong>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted d-block">Application Deadline</small>
+                            <strong>
+                                {% if application.job.application_deadline %}
+                                    {{ application.job.application_deadline.strftime('%d %B %Y') }}
+                                {% else %}
+                                    No deadline specified
+                                {% endif %}
+                            </strong>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted d-block">Eligibility</small>
+                            <strong>{{ application.job.eligibility or 'Not specified' }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Description -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">Job Description</h5>
+                </div>
+                <div class="card-body">
+                    <div class="job-description">
+                        {{ application.job.description|safe }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Poster -->
+            {% if application.job.job_poster %}
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">Job Poster</h5>
+                </div>
+                <div class="card-body text-center">
+                    {% set poster_ext = application.job.job_poster.rsplit('.', 1)[-1].lower() if application.job.job_poster and '.' in application.job.job_poster else '' %}
+                    {% if poster_ext in ['jpg','jpeg','png','gif','webp'] %}
+                        <img src="{{ url_for('static', filename='uploads/jobs/' + application.job.job_poster) }}" 
+                             alt="Job Poster" class="img-fluid" style="max-height: 500px;">
+                    {% elif poster_ext == 'pdf' %}
+                        <div class="mb-3">
+                            <i class="bi bi-file-earmark-pdf" style="font-size: 3rem; color: #dc3545;"></i>
+                            <p class="text-muted mt-2">PDF Document</p>
+                        </div>
+                        <a href="{{ url_for('static', filename='uploads/jobs/' + application.job.job_poster) }}" 
+                           target="_blank" class="btn btn-primary">
+                            <i class="bi bi-download"></i> Download Poster (PDF)
+                        </a>
+                    {% else %}
+                        <div class="mb-3">
+                            <i class="bi bi-file-earmark" style="font-size: 3rem; color: #999;"></i>
+                            <p class="text-muted mt-2">Document File</p>
+                        </div>
+                        <a href="{{ url_for('static', filename='uploads/jobs/' + application.job.job_poster) }}" 
+                           target="_blank" class="btn btn-primary">
+                            <i class="bi bi-download"></i> Download Poster
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Contact Information -->
+            {% if application.job.contact_email or application.job.contact_phone or application.job.company_website %}
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if application.job.contact_email %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Email</small>
+                        <a href="mailto:{{ application.job.contact_email }}">
+                            <i class="bi bi-envelope"></i> {{ application.job.contact_email }}
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% if application.job.contact_phone %}
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Phone</small>
+                        <a href="tel:{{ application.job.contact_phone }}">
+                            <i class="bi bi-telephone"></i> {{ application.job.contact_phone }}
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    {% if application.job.company_website %}
+                    <div>
+                        <small class="text-muted d-block">Website</small>
+                        <a href="{{ application.job.company_website }}" target="_blank">
+                            <i class="bi bi-globe"></i> {{ application.job.company_website }}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar - Application Status -->
+        <div class="col-lg-4">
+            <!-- Application Status Card -->
+            <div class="card border-0 shadow-sm mb-4 sticky-top" style="top: 20px;">
+                <div class="card-header border-0 py-3">
+                    <h5 class="mb-0">Application Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if application.status == 'applied' %}
+                            <div class="status-badge bg-primary-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 80px; height: 80px; background-color: #e7f3ff;">
+                                <i class="bi bi-check-circle" style="font-size: 2.5rem; color: #0066ff;"></i>
+                            </div>
+                            <h4 class="text-primary">Applied</h4>
+                            <p class="text-muted small">Your application has been submitted successfully.</p>
+                        {% elif application.status == 'shortlisted' %}
+                            <div class="status-badge bg-info-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 80px; height: 80px; background-color: #e0f7ff;">
+                                <i class="bi bi-star-fill" style="font-size: 2.5rem; color: #0088ff;"></i>
+                            </div>
+                            <h4 class="text-info">Shortlisted</h4>
+                            <p class="text-muted small">Great news! You have been shortlisted. Please wait for further updates.</p>
+                        {% elif application.status == 'rejected' %}
+                            <div class="status-badge bg-danger-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 80px; height: 80px; background-color: #ffe0e0;">
+                                <i class="bi bi-x-circle" style="font-size: 2.5rem; color: #ff3333;"></i>
+                            </div>
+                            <h4 class="text-danger">Rejected</h4>
+                            <p class="text-muted small">Unfortunately, your application was not selected at this time.</p>
+                        {% elif application.status == 'selected' %}
+                            <div class="status-badge bg-success-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                                 style="width: 80px; height: 80px; background-color: #e0ffe0;">
+                                <i class="bi bi-check2-circle" style="font-size: 2.5rem; color: #00cc00;"></i>
+                            </div>
+                            <h4 class="text-success">Selected</h4>
+                            <p class="text-muted small">Congratulations! You have been selected. Next steps will be communicated soon.</p>
+                        {% endif %}
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Application Date</small>
+                        <strong>{{ application.applied_at.strftime('%d %B %Y, %H:%M') }}</strong>
+                    </div>
+
+                    <div class="mb-3">
+                        <small class="text-muted d-block">Current Status</small>
+                        <strong>{{ application.status.capitalize() }}</strong>
+                    </div>
+
+                    {% if application.job.apply_link %}
+                    <a href="{{ application.job.apply_link }}" target="_blank" class="btn btn-primary w-100 mb-2">
+                        <i class="bi bi-box-arrow-up-right"></i> External Application Link
+                    </a>
+                    {% endif %}
+
+                    <a href="{{ url_for('student.job_applications') }}" class="btn btn-outline-secondary w-100">
+                        <i class="bi bi-arrow-left"></i> Back to Applications
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tips Card -->
+            <div class="card border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-lightbulb text-warning"></i> Tips
+                    </h6>
+                    <ul class="small mb-0">
+                        <li>Check your email regularly for updates on your application.</li>
+                        <li>If shortlisted, respond promptly to any communications.</li>
+                        <li>Keep your profile updated with the latest information.</li>
+                        <li>Apply to multiple opportunities to increase your chances.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .job-description {
+        line-height: 1.8;
+        color: #333;
+    }
+
+    .sticky-top {
+        z-index: 1020;
+    }
+
+    @media (max-width: 991.98px) {
+        .sticky-top {
+            position: relative;
+            top: auto;
+        }
+    }
+</style>
+{% endblock %}

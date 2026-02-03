@@ -144,180 +144,107 @@ def create_job():
     
     if request.method == "POST":
         try:
-            submit_mode = request.form.get("submit_mode", "form").strip()
+            # FORM MODE - Handle form submission (only mode now)
+            # Validate required fields
+            title = request.form.get("title", "").strip()
+            company = request.form.get("company", "").strip()
+            description = request.form.get("description", "").strip()
+            job_type = request.form.get("job_type", "").strip()
             
-            # BANNER MODE - Handle banner image upload
-            if submit_mode == "banner":
-                try:
-                    if 'banner_image' not in request.files:
-                        error_msg = "No image file provided."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("alumni.create_job"))
-                    
-                    file = request.files['banner_image']
-                    
-                    if file.filename == '':
-                        error_msg = "No image file selected."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("alumni.create_job"))
-                    
+            if not all([title, company, description, job_type]):
+                error_msg = "Please fill in all required fields."
+                if request.headers.get('Accept') == 'application/json':
+                    return jsonify({"success": False, "message": error_msg}), 400
+                flash(error_msg, "error")
+                return redirect(url_for("alumni.create_job"))
+            
+            if job_type not in ["Job", "Internship", "Both"]:
+                error_msg = "Invalid job type selected."
+                if request.headers.get('Accept') == 'application/json':
+                    return jsonify({"success": False, "message": error_msg}), 400
+                flash(error_msg, "error")
+                return redirect(url_for("alumni.create_job"))
+            
+            # Parse optional fields
+            location = request.form.get("location", "").strip() or None
+            salary_range = request.form.get("salary_range", "").strip() or None
+            eligibility = request.form.get("eligibility", "").strip() or None
+            department = request.form.get("department", "").strip() or None
+            contact_email = request.form.get("contact_email", "").strip() or None
+            contact_phone = request.form.get("contact_phone", "").strip() or None
+            apply_link = request.form.get("apply_link", "").strip() or None
+            company_website = request.form.get("company_website", "").strip() or None
+            
+            # Handle optional job poster image upload
+            job_poster = None
+            if 'job_poster' in request.files:
+                file = request.files['job_poster']
+                if file and file.filename != '':
                     # Validate file type
                     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
-                    if not ('.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
-                        error_msg = "Please upload a valid image file (PNG, JPG, JPEG, GIF)."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("alumni.create_job"))
-                    
-                    # Save the file
-                    upload_folder = 'static/uploads/jobs'
-                    os.makedirs(upload_folder, exist_ok=True)
-                    
-                    filename = secure_filename(file.filename)
-                    # Add timestamp to avoid filename conflicts
-                    filename = f"{int(time.time())}_{filename}"
-                    file_path = os.path.join(upload_folder, filename)
-                    file.save(file_path)
-                    
-                    # Get banner title and company from the form
-                    banner_title = request.form.get("banner_title", "").strip()
-                    banner_company = request.form.get("banner_company", "").strip()
-                    
-                    if not banner_title or not banner_company:
-                        # Delete the uploaded file if validation fails
-                        if os.path.exists(file_path):
-                            os.remove(file_path)
-                        error_msg = "Please enter both job title and company name."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("alumni.create_job"))
-                    
-                    # Create job entry with banner and provided details
-                    new_job = Job(
-                        title=banner_title,
-                        company=banner_company,
-                        description="[Pending Review - Banner image uploaded]",
-                        job_type="Job",
-                        banner_image=filename,
-                        is_from_banner=True,
-                        posted_by=current_user.id,
-                        is_active=False,
-                        is_verified=False
-                    )
-                    
-                    db.session.add(new_job)
-                    db.session.commit()
-                    
-                    success_msg = "Banner uploaded successfully! Admin will review it and post the job details."
-                    
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({
-                            "success": True,
-                            "message": success_msg,
-                            "redirect_url": url_for("alumni.jobs_list")
-                        })
-                    
-                    flash(success_msg, "success")
-                    return redirect(url_for("alumni.jobs_list"))
-                
-                except Exception as banner_error:
-                    # If file was saved, try to delete it on error
-                    try:
-                        if 'file_path' in locals() and os.path.exists(file_path):
-                            os.remove(file_path)
-                    except:
-                        pass
-                    
-                    db.session.rollback()
-                    error_msg = f"Error uploading banner: {str(banner_error)}"
+                    if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions:
+                        try:
+                            upload_folder = 'static/uploads/jobs'
+                            os.makedirs(upload_folder, exist_ok=True)
+                            
+                            filename = secure_filename(file.filename)
+                            # Add timestamp to avoid filename conflicts
+                            filename = f"{int(time.time())}_{filename}"
+                            file_path = os.path.join(upload_folder, filename)
+                            file.save(file_path)
+                            job_poster = filename
+                        except Exception as file_error:
+                            # Log error but continue without poster
+                            print(f"Error saving job poster: {str(file_error)}")
+            
+            # Parse deadline
+            deadline_str = request.form.get("application_deadline", "").strip()
+            application_deadline = None
+            if deadline_str:
+                try:
+                    application_deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+                except ValueError:
+                    error_msg = "Invalid date format for application deadline."
                     if request.headers.get('Accept') == 'application/json':
                         return jsonify({"success": False, "message": error_msg}), 400
                     flash(error_msg, "error")
                     return redirect(url_for("alumni.create_job"))
             
-            # FORM MODE - Handle form submission
-            else:
-                # Validate required fields
-                title = request.form.get("title", "").strip()
-                company = request.form.get("company", "").strip()
-                description = request.form.get("description", "").strip()
-                job_type = request.form.get("job_type", "").strip()
-                
-                if not all([title, company, description, job_type]):
-                    error_msg = "Please fill in all required fields."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("alumni.create_job"))
-                
-                if job_type not in ["Job", "Internship", "Both"]:
-                    error_msg = "Invalid job type selected."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("alumni.create_job"))
-                
-                # Parse optional fields
-                location = request.form.get("location", "").strip() or None
-                salary_range = request.form.get("salary_range", "").strip() or None
-                eligibility = request.form.get("eligibility", "").strip() or None
-                department = request.form.get("department", "").strip() or None
-                contact_email = request.form.get("contact_email", "").strip() or None
-                contact_phone = request.form.get("contact_phone", "").strip() or None
-                apply_link = request.form.get("apply_link", "").strip() or None
-                
-                # Parse deadline
-                deadline_str = request.form.get("application_deadline", "").strip()
-                application_deadline = None
-                if deadline_str:
-                    try:
-                        application_deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
-                    except ValueError:
-                        error_msg = "Invalid date format for application deadline."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("alumni.create_job"))
-                
-                # Create new job
-                new_job = Job(
-                    title=title,
-                    company=company,
-                    description=description,
-                    job_type=job_type,
-                    location=location,
-                    salary_range=salary_range,
-                    eligibility=eligibility,
-                    department=department,
-                    contact_email=contact_email,
-                    contact_phone=contact_phone,
-                    apply_link=apply_link,
-                    application_deadline=application_deadline,
-                    posted_by=current_user.id,
-                    is_active=True
-                )
-                
-                db.session.add(new_job)
-                db.session.commit()
-                
-                success_msg = f"Job/Internship '{title}' posted successfully!"
-                
-                # Check if request expects JSON (AJAX)
-                if request.headers.get('Accept') == 'application/json':
-                    return jsonify({
-                        "success": True,
-                        "message": success_msg,
-                        "redirect_url": url_for("alumni.jobs_list")
-                    })
-                
-                flash(success_msg, "success")
-                return redirect(url_for("alumni.jobs_list"))
+            # Create new job
+            new_job = Job(
+                title=title,
+                company=company,
+                description=description,
+                job_type=job_type,
+                location=location,
+                salary_range=salary_range,
+                eligibility=eligibility,
+                department=department,
+                contact_email=contact_email,
+                contact_phone=contact_phone,
+                apply_link=apply_link,
+                company_website=company_website,
+                job_poster=job_poster,
+                application_deadline=application_deadline,
+                posted_by=current_user.id,
+                is_active=True
+            )
+            
+            db.session.add(new_job)
+            db.session.commit()
+            
+            success_msg = f"Job/Internship '{title}' posted successfully!"
+            
+            # Check if request expects JSON (AJAX)
+            if request.headers.get('Accept') == 'application/json':
+                return jsonify({
+                    "success": True,
+                    "message": success_msg,
+                    "redirect_url": url_for("alumni.jobs_list")
+                })
+            
+            flash(success_msg, "success")
+            return redirect(url_for("alumni.jobs_list"))
             
         except Exception as e:
             db.session.rollback()
@@ -380,141 +307,89 @@ def edit_job(job_id):
     
     if request.method == "POST":
         try:
-            submit_mode = request.form.get("submit_mode", "form").strip()
+            # FORM MODE - Handle form submission (only mode now)
+            title = request.form.get("title", "").strip()
+            company = request.form.get("company", "").strip()
+            description = request.form.get("description", "").strip()
+            job_type = request.form.get("job_type", "").strip()
+            location = request.form.get("location", "").strip() or None
+            salary_range = request.form.get("salary_range", "").strip() or None
+            eligibility = request.form.get("eligibility", "").strip() or None
+            department = request.form.get("department", "").strip() or None
+            contact_email = request.form.get("contact_email", "").strip() or None
+            contact_phone = request.form.get("contact_phone", "").strip() or None
+            apply_link = request.form.get("apply_link", "").strip() or None
+            company_website = request.form.get("company_website", "").strip() or None
             
-            # BANNER MODE - Handle banner image upload or update without re-upload
-            if submit_mode == "banner":
-                # Try to get an uploaded file (may be absent when editing)
-                file = request.files.get('banner_image')
-
-                # Read banner title/company from form
-                banner_title = request.form.get("banner_title", "").strip()
-                banner_company = request.form.get("banner_company", "").strip()
-
-                # Require title/company in all cases
-                if not banner_title or not banner_company:
-                    error_msg = "Please enter both job title and company name."
-                    if request.headers.get('Accept') == 'application/json':
-                        return jsonify({"success": False, "message": error_msg}), 400
-                    flash(error_msg, "error")
-                    return redirect(url_for("alumni.edit_job", job_id=job_id))
-
-                # If a new file was uploaded, validate and save it
-                if file and getattr(file, 'filename', ''):
+            if not all([title, company, description, job_type]):
+                error_msg = "Please fill in all required fields."
+                if request.headers.get('Accept') == 'application/json':
+                    return jsonify({"success": False, "message": error_msg}), 400
+                flash(error_msg, "error")
+                return redirect(url_for("alumni.edit_job", job_id=job_id))
+            
+            # Handle optional job poster image upload
+            if 'job_poster' in request.files:
+                file = request.files['job_poster']
+                if file and file.filename != '':
                     # Validate file type
                     allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
-                    if not ('.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
-                        error_msg = "Please upload a valid image file (PNG, JPG, JPEG, GIF)."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("alumni.edit_job", job_id=job_id))
-
-                    # Save the file
-                    upload_folder = 'static/uploads/jobs'
-                    os.makedirs(upload_folder, exist_ok=True)
-
-                    filename = secure_filename(file.filename)
-                    filename = f"{int(time.time())}_{filename}"
-                    file_path = os.path.join(upload_folder, filename)
-                    file.save(file_path)
-
-                    # Update job with the new banner
-                    job.banner_image = filename
-
-                else:
-                    # No new file uploaded — require that an existing banner is present
-                    if not job.banner_image:
-                        error_msg = "No image file provided. Please upload a banner image."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("alumni.edit_job", job_id=job_id))
-
-                # Update job title/company and mark for review
-                job.title = banner_title
-                job.company = banner_company
-                job.description = job.description or "[Pending Review - Banner image uploaded]"
-                job.job_type = job.job_type or "Job"
-                job.is_from_banner = True
-                job.is_active = False  # Inactive until admin reviews
-                job.is_verified = False
-
-                db.session.commit()
-
-                success_msg = "Banner updated successfully! Admin will review it and update the job details."
-
-                if request.headers.get('Accept') == 'application/json':
-                    return jsonify({
-                        "success": True,
-                        "message": success_msg,
-                        "redirect_url": url_for("alumni.jobs_list")
-                    })
-
-                flash(success_msg, "success")
-                return redirect(url_for("alumni.jobs_list"))
+                    if '.' in file.filename and file.filename.rsplit('.', 1)[1].lower() in allowed_extensions:
+                        try:
+                            upload_folder = 'static/uploads/jobs'
+                            os.makedirs(upload_folder, exist_ok=True)
+                            
+                            filename = secure_filename(file.filename)
+                            # Add timestamp to avoid filename conflicts
+                            filename = f"{int(time.time())}_{filename}"
+                            file_path = os.path.join(upload_folder, filename)
+                            file.save(file_path)
+                            job.job_poster = filename
+                        except Exception as file_error:
+                            # Log error but continue without poster
+                            print(f"Error saving job poster: {str(file_error)}")
             
-            # FORM MODE - Handle form submission
-            else:
-                title = request.form.get("title", "").strip()
-                company = request.form.get("company", "").strip()
-                description = request.form.get("description", "").strip()
-                job_type = request.form.get("job_type", "").strip()
-                location = request.form.get("location", "").strip() or None
-                salary_range = request.form.get("salary_range", "").strip() or None
-                eligibility = request.form.get("eligibility", "").strip() or None
-                department = request.form.get("department", "").strip() or None
-                contact_email = request.form.get("contact_email", "").strip() or None
-                contact_phone = request.form.get("contact_phone", "").strip() or None
-                apply_link = request.form.get("apply_link", "").strip() or None
-                
-                if not all([title, company, description, job_type]):
-                    error_msg = "Please fill in all required fields."
+            # Parse deadline
+            deadline_str = request.form.get("application_deadline", "").strip()
+            application_deadline = None
+            if deadline_str:
+                try:
+                    application_deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
+                except ValueError:
+                    error_msg = "Invalid date format for application deadline."
                     if request.headers.get('Accept') == 'application/json':
                         return jsonify({"success": False, "message": error_msg}), 400
                     flash(error_msg, "error")
                     return redirect(url_for("alumni.edit_job", job_id=job_id))
-                
-                # Parse deadline
-                deadline_str = request.form.get("application_deadline", "").strip()
-                application_deadline = None
-                if deadline_str:
-                    try:
-                        application_deadline = datetime.strptime(deadline_str, "%Y-%m-%d").date()
-                    except ValueError:
-                        error_msg = "Invalid date format for application deadline."
-                        if request.headers.get('Accept') == 'application/json':
-                            return jsonify({"success": False, "message": error_msg}), 400
-                        flash(error_msg, "error")
-                        return redirect(url_for("alumni.edit_job", job_id=job_id))
-                
-                job.title = title
-                job.company = company
-                job.description = description
-                job.job_type = job_type
-                job.location = location
-                job.salary_range = salary_range
-                job.eligibility = eligibility
-                job.department = department
-                job.contact_email = contact_email
-                job.contact_phone = contact_phone
-                job.apply_link = apply_link
-                job.application_deadline = application_deadline
-                
-                db.session.commit()
-                
-                success_msg = f"Job/Internship '{title}' updated successfully!"
-                
-                # Check if request expects JSON (AJAX)
-                if request.headers.get('Accept') == 'application/json':
-                    return jsonify({
-                        "success": True,
-                        "message": success_msg,
-                        "redirect_url": url_for("alumni.jobs_list")
-                    })
-                
-                flash(success_msg, "success")
-                return redirect(url_for("alumni.jobs_list"))
+            
+            job.title = title
+            job.company = company
+            job.description = description
+            job.job_type = job_type
+            job.location = location
+            job.salary_range = salary_range
+            job.eligibility = eligibility
+            job.department = department
+            job.contact_email = contact_email
+            job.contact_phone = contact_phone
+            job.apply_link = apply_link
+            job.company_website = company_website
+            job.application_deadline = application_deadline
+            
+            db.session.commit()
+            
+            success_msg = f"Job/Internship '{title}' updated successfully!"
+            
+            # Check if request expects JSON (AJAX)
+            if request.headers.get('Accept') == 'application/json':
+                return jsonify({
+                    "success": True,
+                    "message": success_msg,
+                    "redirect_url": url_for("alumni.jobs_list")
+                })
+            
+            flash(success_msg, "success")
+            return redirect(url_for("alumni.jobs_list"))
             
         except Exception as e:
             db.session.rollback()

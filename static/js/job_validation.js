@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const jobTypeInput = document.getElementById("job_type");
     const deadlineInput = document.getElementById("application_deadline");
     const applyLinkInput = document.getElementById("apply_link");
+    const companyWebsiteInput = document.getElementById("company_website");
     const contactEmailInput = document.getElementById("contact_email");
     const contactPhoneInput = document.getElementById("contact_phone");
     const submitBtn = document.getElementById("submitBtn");
@@ -46,6 +47,18 @@ document.addEventListener("DOMContentLoaded", function () {
             msg: "Application deadline must be today or in the future"
         },
         apply_link: {
+            check: v => {
+                if (!v) return true; // Optional field
+                try {
+                    new URL(v);
+                    return true;
+                } catch {
+                    return false;
+                }
+            },
+            msg: "Please enter a valid URL (e.g., https://example.com)"
+        },
+        company_website: {
             check: v => {
                 if (!v) return true; // Optional field
                 try {
@@ -100,29 +113,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function toggleBtn() {
-        // Check current mode
-        const currentMode = document.querySelector('input[name="post-mode"]:checked')?.value || 'form';
-        const bannerInput = document.getElementById('banner_image');
-        const imagePreview = document.getElementById('imagePreview');
-        
-        if (currentMode === 'banner') {
-            // For banner mode, check if a file is selected OR if there's an existing image preview
-            const hasFileSelected = bannerInput && bannerInput.files && bannerInput.files.length > 0;
-            const hasImagePreview = imagePreview && imagePreview.style.display !== 'none';
-            submitBtn.disabled = !(hasFileSelected || hasImagePreview);
-        } else {
-            // For form mode, require all form fields to be valid
-            submitBtn.disabled = !(
-                titleInput.classList.contains("is-valid") &&
-                companyInput.classList.contains("is-valid") &&
-                descriptionInput.classList.contains("is-valid") &&
-                jobTypeInput.classList.contains("is-valid") &&
-                (deadlineInput.value === "" || deadlineInput.classList.contains("is-valid")) &&
-                (applyLinkInput.value === "" || applyLinkInput.classList.contains("is-valid")) &&
-                (contactEmailInput.value === "" || contactEmailInput.classList.contains("is-valid")) &&
-                (contactPhoneInput.value === "" || contactPhoneInput.classList.contains("is-valid"))
-            );
-        }
+        // For form mode, require all form fields to be valid
+        submitBtn.disabled = !(
+            titleInput.classList.contains("is-valid") &&
+            companyInput.classList.contains("is-valid") &&
+            descriptionInput.classList.contains("is-valid") &&
+            jobTypeInput.classList.contains("is-valid") &&
+            (deadlineInput.value === "" || deadlineInput.classList.contains("is-valid")) &&
+            (applyLinkInput.value === "" || applyLinkInput.classList.contains("is-valid")) &&
+            (companyWebsiteInput.value === "" || companyWebsiteInput.classList.contains("is-valid")) &&
+            (contactEmailInput.value === "" || contactEmailInput.classList.contains("is-valid")) &&
+            (contactPhoneInput.value === "" || contactPhoneInput.classList.contains("is-valid"))
+        );
     }
 
     // Real-time validation listeners
@@ -162,6 +164,12 @@ document.addEventListener("DOMContentLoaded", function () {
             : invalid(applyLinkInput, rules.apply_link.msg);
     });
 
+    companyWebsiteInput.addEventListener("input", () => {
+        rules.company_website.check(companyWebsiteInput.value)
+            ? valid(companyWebsiteInput)
+            : invalid(companyWebsiteInput, rules.company_website.msg);
+    });
+
     contactEmailInput.addEventListener("input", () => {
         rules.contact_email.check(contactEmailInput.value)
             ? valid(contactEmailInput)
@@ -175,13 +183,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     form.addEventListener("submit", e => {
-        // Check current mode - skip form validation in banner mode
-        const currentMode = document.querySelector('input[name="post-mode"]:checked')?.value || 'form';
-        if (currentMode === 'banner') {
-            // In banner mode, don't validate form fields
-            return;
-        }
-
         if (!submitBtn.disabled) return;
         e.preventDefault();
         titleInput.dispatchEvent(new Event("input"));
@@ -190,6 +191,7 @@ document.addEventListener("DOMContentLoaded", function () {
         jobTypeInput.dispatchEvent(new Event("change"));
         deadlineInput.dispatchEvent(new Event("change"));
         applyLinkInput.dispatchEvent(new Event("input"));
+        companyWebsiteInput.dispatchEvent(new Event("input"));
         contactEmailInput.dispatchEvent(new Event("input"));
         contactPhoneInput.dispatchEvent(new Event("input"));
     });
@@ -201,6 +203,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (jobTypeInput.value) jobTypeInput.dispatchEvent(new Event("change"));
     if (deadlineInput.value) deadlineInput.dispatchEvent(new Event("change"));
     if (applyLinkInput.value) applyLinkInput.dispatchEvent(new Event("input"));
+    if (companyWebsiteInput.value) companyWebsiteInput.dispatchEvent(new Event("input"));
     if (contactEmailInput.value) contactEmailInput.dispatchEvent(new Event("input"));
     if (contactPhoneInput.value) contactPhoneInput.dispatchEvent(new Event("input"));
 });
