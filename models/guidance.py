@@ -100,8 +100,8 @@ class GuidanceSession(db.Model):
     )  # scheduled, completed, cancelled, rescheduled
     
     # Timestamps
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=utc_now)
+    updated_at = db.Column(db.DateTime, default=utc_now, onupdate=utc_now)
     
     def __repr__(self):
         return f"<GuidanceSession {self.id} - {self.session_date}>"
