@@ -4,8 +4,9 @@ from utils.user_role_enum import UserRole
 from extensions import db
 from models.announcement import Announcement
 from sqlalchemy import func
-from utils.timezone_helper import get_utc_now
+from utils.timezone_helper import get_utc_now, ensure_timezone_aware
 from datetime import datetime
+import pytz
 
 faculty = Blueprint("faculty", __name__, url_prefix="/faculty")
 
@@ -482,23 +483,34 @@ def seminars():
             speaker_name = request.form.get("speaker_name", "").strip()
             topic = request.form.get("topic", "").strip()
             
+            print(f"DEBUG: Received data - title={title}, date={date_str}, time={time_str}, location={location}, speaker={speaker_name}, topic={topic}")
+            
             if not all([title, description, date_str, time_str, location, speaker_name, topic]):
+                print(f"DEBUG: Missing required fields")
                 flash("All fields are required.", "error")
                 return redirect(url_for("faculty.seminars"))
             
             # Combine date and time
-            from datetime import datetime
             try:
                 seminar_datetime = datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
-            except ValueError:
+                # Convert naive datetime to UTC timezone-aware datetime
+                seminar_datetime = ensure_timezone_aware(seminar_datetime, assume_utc=True)
+                print(f"DEBUG: Parsed datetime: {seminar_datetime}")
+            except ValueError as ve:
+                print(f"DEBUG: DateTime parsing error: {str(ve)}")
                 flash("Invalid date or time format.", "error")
                 return redirect(url_for("faculty.seminars"))
             
             # Validate that seminar date is not in the past
             current_time = get_utc_now()
+            print(f"DEBUG: Current time: {current_time}, Seminar datetime: {seminar_datetime}")
+            
             if seminar_datetime < current_time:
+                print(f"DEBUG: Seminar date is in the past")
                 flash("Seminar date and time must be in the future. Please select today or a later date.", "error")
                 return redirect(url_for("faculty.seminars"))
+            
+            print(f"DEBUG: Faculty profile - id={faculty_profile.id}, department={faculty_profile.department}")
             
             # Create seminar
             seminar = Seminar(
@@ -509,19 +521,24 @@ def seminars():
                 speaker_name=speaker_name,
                 topic=topic,
                 faculty_id=faculty_profile.id,
-                department=faculty_profile.department.display_name
+                department=faculty_profile.department.display_name if hasattr(faculty_profile.department, 'display_name') else str(faculty_profile.department)
             )
+            
+            print(f"DEBUG: Seminar object created: {seminar}")
             
             db.session.add(seminar)
             db.session.commit()
+            print(f"DEBUG: Seminar committed successfully with id={seminar.id}")
             
             flash(f"Seminar '{title}' scheduled successfully!", "success")
             return redirect(url_for("faculty.seminars"))
             
         except Exception as e:
             db.session.rollback()
+            import traceback
             print(f"Error: {str(e)}")
-            flash("An error occurred while scheduling seminar.", "error")
+            print(traceback.format_exc())
+            flash(f"An error occurred while scheduling seminar: {str(e)}", "error")
             return redirect(url_for("faculty.seminars"))
     
     # Get all seminars created by this faculty
@@ -529,7 +546,7 @@ def seminars():
     
     return render_template(
         "faculty/seminar.html",
-        department=faculty_profile.department.display_name,
+        department=faculty_profile.department.display_name if hasattr(faculty_profile.department, 'display_name') else str(faculty_profile.department),
         seminars=my_seminars
     )
 

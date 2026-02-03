@@ -136,3 +136,31 @@ def get_datetime_for_display(datetime_obj):
         A datetime object in the local timezone for display
     """
     return convert_utc_to_local(datetime_obj)
+
+
+def ensure_timezone_aware(dt, assume_utc=True):
+    """
+    Ensure a datetime object is timezone-aware.
+    If the datetime is naive, add timezone information.
+    
+    Args:
+        dt: A datetime object (may be naive or aware)
+        assume_utc: If True and dt is naive, assume it's UTC (default: True)
+        
+    Returns:
+        A timezone-aware datetime object, or None if input is None
+    """
+    if dt is None:
+        return None
+    
+    # If already timezone-aware, return as-is
+    if dt.tzinfo is not None:
+        return dt
+    
+    # If naive, add timezone info
+    if assume_utc:
+        return pytz.UTC.localize(dt)
+    else:
+        local_tz = get_local_timezone()
+        return local_tz.localize(dt)
+

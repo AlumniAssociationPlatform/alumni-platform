@@ -5,7 +5,7 @@ from models.guidance import Guidance
 from models.announcement import Announcement
 from models.user import User
 from extensions import db
-from utils.timezone_helper import get_utc_now
+from utils.timezone_helper import get_utc_now, ensure_timezone_aware
 
 student = Blueprint("student", __name__, url_prefix="/student")
 
@@ -284,6 +284,7 @@ def events():
 @student_required
 def register_event(event_id):
     """Register for an event"""
+    from datetime import datetime
     from models.event import Event
     from models.event_participant import EventParticipant
     
@@ -678,6 +679,11 @@ def view_seminar(seminar_id):
     from datetime import datetime
     
     student_profile = Student.query.filter_by(user_id=current_user.id).first()
+    
+    if not student_profile:
+        flash("Student profile not found.", "error")
+        return redirect(url_for("student.seminars"))
+    
     seminar = Seminar.query.get_or_404(seminar_id)
     
     # Verify seminar is for student's department
@@ -687,7 +693,10 @@ def view_seminar(seminar_id):
     
     # Check if seminar date is not in the past
     current_time = get_utc_now()
-    if seminar.date < current_time:
+    # Ensure seminar.date is timezone-aware for safe comparison
+    seminar_date = ensure_timezone_aware(seminar.date)
+    
+    if seminar_date < current_time:
         flash("This seminar has already occurred.", "warning")
         return redirect(url_for("student.seminars"))
     
