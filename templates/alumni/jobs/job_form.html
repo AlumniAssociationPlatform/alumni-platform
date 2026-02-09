@@ -196,6 +196,16 @@
                         <small class="form-text">Direct link for applicants</small>
                     </div>
                 </div>
+
+                <div class="form-group-row full">
+                    <div class="form-group">
+                        <label for="company_linkedin_url" class="form-label">Company LinkedIn URL</label>
+                        <input type="text" class="form-control" id="company_linkedin_url" name="company_linkedin_url"
+                            value="{{ job.company_linkedin_url | default('', true) }}" placeholder="https://www.linkedin.com/company/">
+                        <div class="invalid-feedback"></div>
+                        <small class="form-text">LinkedIn profile or company page (optional)</small>
+                    </div>
+                </div>
             </div>
 
             <!-- JOB POSTER SECTION -->
@@ -354,8 +364,7 @@
                     posterUploadPlaceholder.style.display = 'none';
                     posterImagePreview.style.display = 'block';
                     
-                    // Reset file input value so the same file can be selected again
-                    jobPosterInput.value = '';
+                    // Keep the file input value so FormData includes the selected file on submit
 
                 };
                 reader.readAsDataURL(file);

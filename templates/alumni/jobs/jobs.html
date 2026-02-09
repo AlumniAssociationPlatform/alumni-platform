@@ -39,14 +39,14 @@
     <div class="row">
         {% for job in jobs.items %}
         <div class="col-12 mb-4">
-            {% if job.is_from_banner and job.banner_image %}
+            {% if job.job_poster %}
             <!-- Banner Image Card - Image Only -->
             <div class="job-card">
                 <div class="card-body p-0">
                     <div class="row align-items-center g-0">
                         <!-- Image on Left -->
                         <div class="col-md-3">
-                            <img src="{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}" 
+                            <img src="{{ url_for('static', filename='uploads/jobs/' + job.job_poster) }}" 
                                 alt="Job Banner" class="img-fluid" style="height: 200px; width: 100%; object-fit: cover; border-radius: 8px 0 0 8px;">
                         </div>
 

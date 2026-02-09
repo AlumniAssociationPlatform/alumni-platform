@@ -237,8 +237,7 @@ def create_job():
                     company=banner_company,
                     description="",  # Will be filled by admin during approval
                     job_type="Job",
-                    banner_image=filename,
-                    is_from_banner=True,
+                    job_poster=filename,
                     posted_by=current_user.id,
                     is_active=False,  # Inactive until admin reviews
                     is_verified=False
@@ -289,6 +288,8 @@ def create_job():
                 contact_email = request.form.get("contact_email", "").strip() or None
                 contact_phone = request.form.get("contact_phone", "").strip() or None
                 apply_link = request.form.get("apply_link", "").strip() or None
+                company_website = request.form.get("company_website", "").strip() or None
+                company_linkedin_url = request.form.get("company_linkedin_url", "").strip() or None
                 
                 # Parse deadline
                 deadline_str = request.form.get("application_deadline", "").strip()
@@ -316,6 +317,8 @@ def create_job():
                     contact_email=contact_email,
                     contact_phone=contact_phone,
                     apply_link=apply_link,
+                    company_website=company_website,
+                    company_linkedin_url=company_linkedin_url,
                     application_deadline=application_deadline,
                     posted_by=current_user.id,
                     is_active=True
@@ -412,12 +415,12 @@ def edit_job(job_id):
                     file_path = os.path.join(upload_folder, filename)
                     file.save(file_path)
 
-                    # Update job with the new banner
-                    job.banner_image = filename
+                    # Update job with the new banner (use job_poster column)
+                    job.job_poster = filename
 
                 else:
-                    # No new file uploaded — require that an existing banner is present
-                    if not job.banner_image:
+                    # No new file uploaded — require that an existing banner/poster is present
+                    if not job.job_poster:
                         error_msg = "No image file provided. Please upload a banner image."
                         if request.headers.get('Accept') == 'application/json':
                             return jsonify({"success": False, "message": error_msg}), 400
@@ -429,7 +432,6 @@ def edit_job(job_id):
                 job.company = banner_company
                 job.description = job.description or "[Pending Review - Banner image uploaded]"
                 job.job_type = job.job_type or "Job"
-                job.is_from_banner = True
                 job.is_active = False  # Inactive until admin reviews
                 job.is_verified = False
 
@@ -481,7 +483,9 @@ def edit_job(job_id):
                 job.contact_email = request.form.get("contact_email", "").strip() or None
                 job.contact_phone = request.form.get("contact_phone", "").strip() or None
                 job.apply_link = request.form.get("apply_link", "").strip() or None
-                job.is_from_banner = False
+                job.company_website = request.form.get("company_website", "").strip() or None
+                job.company_linkedin_url = request.form.get("company_linkedin_url", "").strip() or None
+                # Ensure this is treated as a regular job posting
                 
                 # Parse deadline
                 deadline_str = request.form.get("application_deadline", "").strip()

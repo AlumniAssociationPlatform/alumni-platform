@@ -134,7 +134,7 @@
             </li>
             {% endif %}
 
-            {% for page_num in jobs.iter_pages(left_edge=1, left_margin=1, right_margin=1, right_edge=1) %}
+            {% for page_num in jobs.iter_pages() %}
             {% if page_num %}
             {% if page_num == jobs.page %}
             <li class="page-item active">

@@ -95,9 +95,9 @@
                     {% for job in jobs.items %}
                     <tr>
                         <td>
-                            {% if job.is_from_banner and job.banner_image %}
-                            <img src="{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}" 
-                                alt="Job Banner" style="height: 60px; width: 100px; object-fit: cover; border-radius: 4px;">
+                            {% if job.job_poster %}
+                            <img src="{{ url_for('static', filename='uploads/jobs/' + job.job_poster) }}" 
+                                alt="Job Poster" style="height: 60px; width: 100px; object-fit: cover; border-radius: 4px;">
                             {% else %}
                             <strong>{{ job.title }}</strong>
                             {% endif %}
@@ -191,42 +191,37 @@
                                     <h5 class="modal-title">{{ job.title }}</h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                 </div>
-                                <div class="modal-body">
-                                    {% if job.is_from_banner and job.banner_image %}
-                                    <!-- Banner Image Only -->
-                                    <div class="text-center">
-                                        <img src="{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}" 
-                                            alt="Job Banner" class="img-fluid rounded" style="max-height: 400px; object-fit: cover;">
-                                        <p class="text-muted mt-3">
-                                            <i class="fas fa-image"></i> Posted via Image Upload
-                                        </p>
-                                        <hr>
-                                        <div class="text-muted small">
-                                            <p><strong>Posted by:</strong> {{ job.poster.name }} ({{ job.poster.email }})</p>
-                                            <p><strong>Posted on:</strong> {{ job.created_at.strftime('%d %B %Y at %H:%M') }}</p>
-                                        </div>
+                                <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+                                    <!-- Display Poster Image if available -->
+                                    {% if job.job_poster %}
+                                    <div class="text-center mb-4">
+                                        <img src="{{ url_for('static', filename='uploads/jobs/' + job.job_poster) }}" 
+                                            alt="Job Poster" class="img-fluid rounded" style="max-height: 300px; object-fit: cover;">
                                     </div>
-                                    {% else %}
-                                    <!-- Full Job Details -->
-                                    <div class="row mb-3">
+                                    <hr>
+                                    {% endif %}
+
+                                    <!-- Company & Job Type Header -->
+                                    <div class="row mb-4">
                                         <div class="col-md-6">
-                                            <h6 class="text-muted">Company</h6>
-                                            <p><strong>{{ job.company }}</strong></p>
+                                            <h6 class="text-muted text-uppercase small fw-bold">Company</h6>
+                                            <p class="mb-0"><strong>{{ job.company }}</strong></p>
                                         </div>
                                         <div class="col-md-6">
-                                            <h6 class="text-muted">Job Type</h6>
-                                            <p><strong>{{ job.job_type }}</strong></p>
+                                            <h6 class="text-muted text-uppercase small fw-bold">Job Type</h6>
+                                            <p class="mb-0"><span class="badge bg-secondary">{{ job.job_type }}</span></p>
                                         </div>
                                     </div>
 
-                                    <div class="row mb-3">
+                                    <!-- Posted By & Status -->
+                                    <div class="row mb-4">
                                         <div class="col-md-6">
-                                            <h6 class="text-muted">Posted By</h6>
-                                            <p><strong>{{ job.poster.name }}</strong> ({{ job.poster.email }})</p>
+                                            <h6 class="text-muted text-uppercase small fw-bold">Posted By</h6>
+                                            <p class="mb-0"><small><strong>{{ job.poster.name }}</strong></small><br><small class="text-muted">{{ job.poster.email }}</small></p>
                                         </div>
                                         <div class="col-md-6">
-                                            <h6 class="text-muted">Status</h6>
-                                            <p>
+                                            <h6 class="text-muted text-uppercase small fw-bold">Status</h6>
+                                            <p class="mb-0">
                                                 {% if job.is_verified %}
                                                 <span class="badge bg-success">Verified</span>
                                                 {% else %}
@@ -239,83 +234,113 @@
                                         </div>
                                     </div>
 
-                                    <div class="mb-3">
-                                        <h6 class="text-muted">Description</h6>
-                                        <p>{{ job.description }}</p>
+                                    <!-- Description Section -->
+                                    <div class="mb-4">
+                                        <h6 class="text-muted text-uppercase small fw-bold">Description</h6>
+                                        <p class="mb-0" style="line-height: 1.6;">{{ job.description }}</p>
                                     </div>
 
-                                    <div class="row mb-3">
-                                        {% if job.location %}
-                                        <div class="col-md-6">
-                                            <h6 class="text-muted">Location</h6>
-                                            <p>{{ job.location }}</p>
-                                        </div>
-                                        {% endif %}
+                                    <hr class="my-3">
 
-                                        {% if job.salary_range %}
+                                    <!-- Location & Salary -->
+                                    <div class="row mb-4">
                                         <div class="col-md-6">
-                                            <h6 class="text-muted">Salary Range</h6>
-                                            <p>{{ job.salary_range }}</p>
+                                            <h6 class="text-muted text-uppercase small fw-bold">Location</h6>
+                                            <p class="mb-0">{{ job.location if job.location else '—' }}</p>
                                         </div>
-                                        {% endif %}
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted text-uppercase small fw-bold">Salary Range</h6>
+                                            <p class="mb-0">{{ job.salary_range if job.salary_range else '—' }}</p>
+                                        </div>
                                     </div>
 
-                                    <div class="row mb-3">
-                                        {% if job.eligibility %}
+                                    <!-- Eligibility & Department -->
+                                    <div class="row mb-4">
                                         <div class="col-md-6">
-                                            <h6 class="text-muted">Eligibility</h6>
-                                            <p>{{ job.eligibility }}</p>
+                                            <h6 class="text-muted text-uppercase small fw-bold">Eligibility</h6>
+                                            <p class="mb-0">{{ job.eligibility if job.eligibility else '—' }}</p>
                                         </div>
-                                        {% endif %}
-
-                                        {% if job.department %}
                                         <div class="col-md-6">
-                                            <h6 class="text-muted">Department</h6>
-                                            <p>{{ job.department }}</p>
+                                            <h6 class="text-muted text-uppercase small fw-bold">Department</h6>
+                                            <p class="mb-0">{{ job.department if job.department else '—' }}</p>
                                         </div>
-                                        {% endif %}
                                     </div>
 
-                                    <div class="row mb-3">
-                                        {% if job.application_deadline %}
-                                        <div class="col-md-6">
-                                            <h6 class="text-muted">Application Deadline</h6>
-                                            <p>{{ job.application_deadline.strftime('%d %B %Y') }}</p>
-                                        </div>
-                                        {% endif %}
-
-                                        {% if job.contact_email %}
-                                        <div class="col-md-6">
-                                            <h6 class="text-muted">Contact Email</h6>
-                                            <p><a href="mailto:{{ job.contact_email }}">{{ job.contact_email }}</a></p>
-                                        </div>
-                                        {% endif %}
+                                    <!-- Application Deadline -->
+                                    <div class="mb-4">
+                                        <h6 class="text-muted text-uppercase small fw-bold">Application Deadline</h6>
+                                        <p class="mb-0">{{ job.application_deadline.strftime('%d %B %Y') if job.application_deadline else '—' }}</p>
                                     </div>
 
-                                    {% if job.contact_phone %}
-                                    <div class="mb-3">
-                                        <h6 class="text-muted">Contact Phone</h6>
-                                        <p><a href="tel:{{ job.contact_phone }}">{{ job.contact_phone }}</a></p>
-                                    </div>
-                                    {% endif %}
+                                    <hr class="my-3">
 
+                                    <!-- Contact Email & Contact Phone -->
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted text-uppercase small fw-bold">Contact Email</h6>
+                                            <p class="mb-0">
+                                                {% if job.contact_email %}
+                                                <a href="mailto:{{ job.contact_email }}" class="text-decoration-none">{{ job.contact_email }}</a>
+                                                {% else %}
+                                                —
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted text-uppercase small fw-bold">Contact Phone</h6>
+                                            <p class="mb-0">
+                                                {% if job.contact_phone %}
+                                                <a href="tel:{{ job.contact_phone }}" class="text-decoration-none">{{ job.contact_phone }}</a>
+                                                {% else %}
+                                                —
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Company Website & LinkedIn -->
+                                    <div class="row mb-4">
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted text-uppercase small fw-bold">Company Website</h6>
+                                            <p class="mb-0">
+                                                {% if job.company_website %}
+                                                <a href="{{ job.company_website }}" target="_blank" class="text-decoration-none">{{ job.company_website }} <i class="fas fa-external-link-alt ms-1"></i></a>
+                                                {% else %}
+                                                —
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6 class="text-muted text-uppercase small fw-bold">Company LinkedIn</h6>
+                                            <p class="mb-0">
+                                                {% if job.company_linkedin_url %}
+                                                <a href="{{ job.company_linkedin_url }}" target="_blank" class="text-decoration-none">LinkedIn Page <i class="fas fa-external-link-alt ms-1"></i></a>
+                                                {% else %}
+                                                —
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Application Link -->
                                     {% if job.apply_link %}
-                                    <div class="mb-3">
-                                        <h6 class="text-muted">Application Link</h6>
-                                        <p><a href="{{ job.apply_link }}" target="_blank"
-                                                class="btn btn-sm btn-primary">
-                                                Open Application Link <i class="fas fa-external-link-alt"></i>
-                                            </a></p>
+                                    <div class="mb-4">
+                                        <h6 class="text-muted text-uppercase small fw-bold">Application Link</h6>
+                                        <p class="mb-0">
+                                            <a href="{{ job.apply_link }}" target="_blank" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-external-link-alt me-2"></i>Open Application Link
+                                            </a>
+                                        </p>
                                     </div>
                                     {% endif %}
 
-                                    <hr>
+                                    <hr class="my-3">
 
+                                    <!-- Meta Information -->
                                     <div class="text-muted small">
-                                        <p>Posted on: {{ job.created_at.strftime('%d %B %Y at %H:%M') }}</p>
-                                        <p>Last updated: {{ job.updated_at.strftime('%d %B %Y at %H:%M') }}</p>
+                                        <p class="mb-1"><strong>Posted:</strong> {{ job.created_at.strftime('%d %B %Y at %H:%M') }}</p>
+                                        <p class="mb-0"><strong>Last Updated:</strong> {{ job.updated_at.strftime('%d %B %Y at %H:%M') }}</p>
                                     </div>
-                                    {% endif %}
                                 </div>
                                 <div class="modal-footer">
                                     <button type="button" class="btn btn-secondary"
@@ -352,7 +377,7 @@
             </li>
             {% endif %}
 
-            {% for page_num in jobs.iter_pages(left_edge=1, left_margin=1, right_margin=1, right_edge=1) %}
+            {% for page_num in jobs.iter_pages() %}
             {% if page_num %}
             {% if page_num == jobs.page %}
             <li class="page-item active">

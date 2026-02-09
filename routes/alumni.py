@@ -174,6 +174,7 @@ def create_job():
             contact_phone = request.form.get("contact_phone", "").strip() or None
             apply_link = request.form.get("apply_link", "").strip() or None
             company_website = request.form.get("company_website", "").strip() or None
+            company_linkedin_url = request.form.get("company_linkedin_url", "").strip() or None
             
             # Handle optional job poster image upload
             job_poster = None
@@ -224,6 +225,7 @@ def create_job():
                 contact_phone=contact_phone,
                 apply_link=apply_link,
                 company_website=company_website,
+                company_linkedin_url=company_linkedin_url,
                 job_poster=job_poster,
                 application_deadline=application_deadline,
                 posted_by=current_user.id,
@@ -320,6 +322,7 @@ def edit_job(job_id):
             contact_phone = request.form.get("contact_phone", "").strip() or None
             apply_link = request.form.get("apply_link", "").strip() or None
             company_website = request.form.get("company_website", "").strip() or None
+            company_linkedin_url = request.form.get("company_linkedin_url", "").strip() or None
             
             if not all([title, company, description, job_type]):
                 error_msg = "Please fill in all required fields."
@@ -374,6 +377,7 @@ def edit_job(job_id):
             job.contact_phone = contact_phone
             job.apply_link = apply_link
             job.company_website = company_website
+            job.company_linkedin_url = company_linkedin_url
             job.application_deadline = application_deadline
             
             db.session.commit()

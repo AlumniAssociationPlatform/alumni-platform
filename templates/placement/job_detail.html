@@ -45,6 +45,7 @@
                     <p><strong>Company Email:</strong> {% if job.contact_email %}<a href="mailto:{{ job.contact_email }}">{{ job.contact_email }}</a>{% else %}-{% endif %}</p>
                     <p><strong>Phone:</strong> {% if job.contact_phone %}<a href="tel:{{ job.contact_phone }}">{{ job.contact_phone }}</a>{% else %}-{% endif %}</p>
                     <p><strong>Company Website:</strong> {% if job.company_website %}<a href="{{ job.company_website }}" target="_blank" rel="noopener noreferrer">{{ job.company_website }}</a>{% else %}-{% endif %}</p>
+                    <p><strong>Company LinkedIn:</strong> {% if job.company_linkedin_url %}<a href="{{ job.company_linkedin_url }}" target="_blank" rel="noopener noreferrer">Visit LinkedIn</a>{% else %}-{% endif %}</p>
                     <p><strong>Apply Here:</strong> {% if job.apply_link %}<a href="{{ job.apply_link }}" target="_blank" rel="noopener noreferrer" class="fw-bold text-success">Click to Apply</a>{% else %}-{% endif %}</p>
                 </div>
             </div>
@@ -59,9 +60,7 @@
                         <img src="{{ url_for('static', filename='uploads/jobs/' + job.job_poster) }}" alt="Job Poster" class="img-fluid mb-3" style="border-radius: 8px; max-height: 400px; object-fit: contain;">
                     </div>
                     {% endif %}
-                    {% if job.banner_image %}
-                    <img src="{{ url_for('static', filename='uploads/jobs/' + job.banner_image) }}" alt="Banner" class="img-fluid mb-3">
-                    {% endif %}
+                    {# legacy banner_image removed; use job.job_poster instead #}
 
                     <p class="mb-0"><strong>Posted By:</strong></p>
                     <p class="mb-1 text-muted">{{ job.poster.name if job.poster else '-' }}</p>

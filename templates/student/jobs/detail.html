@@ -62,31 +62,24 @@
                 </div>
             </div>
             {% else %}
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <i class="fas fa-paper-plane text-primary" style="font-size: 2rem;"></i>
-                    </div>
-                    <h5 class="card-title mb-3">Apply for this Position</h5>
-                    
+            <div class="card border-0 shadow-sm mb-4 bg-danger text-white">
+                <div class="card-body text-center p-4">
                     {% if job.application_deadline and job.application_deadline < now.date() %}
-                    <div class="alert alert-danger mb-0">
-                        <i class="fas fa-clock"></i>
-                        <strong>Application Closed</strong>
-                        <p class="small mb-0 mt-2">Deadline: {{ job.application_deadline|datetime('%d %b %Y') }}</p>
+                    <div class="mb-2">
+                        <i class="fas fa-clock" style="font-size: 2rem;"></i>
                     </div>
+                    <h5 class="mb-2">Application Closed</h5>
+                    <p class="small mb-0">Deadline: <strong>{{ job.application_deadline|datetime('%d %b %Y') }}</strong></p>
                     {% else %}
-                    <p class="text-muted small mb-3">
-                        Ready to apply? Click the button below to submit your application.
-                    </p>
-                    {% if job.application_deadline %}
-                    <div class="alert alert-light mb-3 border">
-                        <i class="fas fa-calendar text-warning"></i>
-                        <small>Deadline: <strong>{{ job.application_deadline|datetime('%d %b %Y') }}</strong></small>
+                    <div class="mb-2">
+                        <i class="fas fa-paper-plane" style="font-size: 2rem;"></i>
                     </div>
+                    <h5 class="mb-2">Apply Now</h5>
+                    {% if job.application_deadline %}
+                    <p class="text-primary mb-3">Deadline: <strong>{{ job.application_deadline|datetime('%d %b %Y') }}</strong></p>
                     {% endif %}
-                    <button type="button" class="btn btn-primary w-100 btn-lg" data-bs-toggle="modal" data-bs-target="#applyModal">
-                        <i class="fas fa-paper-plane"></i> Apply Now
+                    <button type="button" class="btn btn-primary w-100 fw-bold" data-bs-toggle="modal" data-bs-target="#applyModal">
+                        Submit Application
                     </button>
                     {% endif %}
                 </div>
@@ -211,7 +204,7 @@
             </div>
 
             <!-- Contact Information Card -->
-            {% if job.contact_email or job.contact_phone or job.apply_link %}
+            {% if job.contact_email or job.contact_phone or job.company_website or job.company_linkedin_url or job.apply_link %}
             <div class="card border-0 shadow-sm">
                 <div class="card-header bg-white border-bottom">
                     <h5 class="mb-0"><i class="fas fa-envelope text-success"></i> Contact Information</h5>
@@ -234,6 +227,22 @@
                             </a>
                         </div>
                         {% endif %}
+                        {% if job.company_website %}
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted d-block mb-1">COMPANY WEBSITE</small>
+                            <a href="{{ job.company_website }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                                <i class="fas fa-globe"></i> Visit Website
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% if job.company_linkedin_url %}
+                        <div class="col-md-6 mb-3">
+                            <small class="text-muted d-block mb-1">COMPANY LINKEDIN</small>
+                            <a href="{{ job.company_linkedin_url }}" target="_blank" rel="noopener noreferrer" class="text-decoration-none">
+                                <i class="fab fa-linkedin"></i> LinkedIn Page
+                            </a>
+                        </div>
+                        {% endif %}
                         {% if job.apply_link %}
                         <div class="col-12">
                             <small class="text-muted d-block mb-1">EXTERNAL LINK</small>
@@ -250,6 +259,32 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
+            <!-- Quick Links Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0"><i class="fas fa-link text-warning"></i> Quick Links</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if job.apply_link %}
+                        <a href="{{ job.apply_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-external-link-alt"></i> External Application Link
+                        </a>
+                        {% endif %}
+                        {% if job.company_website %}
+                        <a href="{{ job.company_website }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-globe"></i> Company Website
+                        </a>
+                        {% endif %}
+                        {% if job.company_linkedin_url %}
+                        <a href="{{ job.company_linkedin_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm">
+                            <i class="fab fa-linkedin"></i> Company LinkedIn
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
             <!-- Posted By Card -->
             {% if job.poster %}
             <div class="card border-0 shadow-sm mb-4">

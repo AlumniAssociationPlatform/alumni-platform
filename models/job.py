@@ -26,6 +26,7 @@ class Job(db.Model):
     contact_email = db.Column(db.String(150))
     contact_phone = db.Column(db.String(20))
     company_website = db.Column(db.String(500))  # Company website URL
+    company_linkedin_url = db.Column(db.String(500))  # Company LinkedIn URL
     
     # Job Poster Image (Optional)
     job_poster = db.Column(db.String(500))  # Store filename/path for optional job poster image
