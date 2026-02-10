@@ -28,7 +28,7 @@ try:
 
     migrate = Migrate(app, db)
 
-    # Import models AFTER db init
+    # Import models AFTER db init -- new comment
     from models import User
     from utils.timezone_helper import format_datetime_local
 
