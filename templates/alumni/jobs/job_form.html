@@ -106,18 +106,26 @@
 
                 <div class="form-group-row">
                     <div class="form-group">
-                        <label for="location" class="form-label">Location</label>
+                        <label for="location" class="form-label">
+                            Location
+                            <span class="required-mark">*</span>
+                        </label>
                         <input type="text" class="form-control" id="location" name="location"
-                            value="{{ job.location if job else '' }}" placeholder="e.g., New York, Remote, Bangalore">
+                            value="{{ job.location if job else '' }}" placeholder="e.g., New York, Remote, Bangalore" required>
+                        <div class="invalid-feedback"></div>
                         <small class="form-text">Work location or remote option</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="salary_range" class="form-label">Salary Range</label>
+                        <label for="salary_range" class="form-label">
+                            Salary Range
+                            <span class="required-mark">*</span>
+                        </label>
                         <input type="text" class="form-control" id="salary_range" name="salary_range"
                             value="{{ job.salary_range if job else '' }}"
-                            placeholder="e.g., $80,000 - $120,000 per annum">
-                        <small class="form-text">Leave blank if not applicable</small>
+                            placeholder="e.g., $80,000 - $120,000 per annum" required>
+                        <div class="invalid-feedback"></div>
+                        <small class="form-text">Salary range in standardized format</small>
                     </div>
                 </div>
             </div>
@@ -130,27 +138,38 @@
 
                 <div class="form-group-row">
                     <div class="form-group">
-                        <label for="department" class="form-label">Department/Industry</label>
+                        <label for="department" class="form-label">
+                            Department/Industry
+                            <span class="required-mark">*</span>
+                        </label>
                         <input type="text" class="form-control" id="department" name="department"
                             value="{{ job.department if job else '' }}"
-                            placeholder="e.g., Software Development, Data Science">
+                            placeholder="e.g., Software Development, Data Science" required>
+                        <div class="invalid-feedback"></div>
                     </div>
 
                     <div class="form-group">
-                        <label for="eligibility" class="form-label">Eligibility Criteria</label>
+                        <label for="eligibility" class="form-label">
+                            Eligibility Criteria
+                            <span class="required-mark">*</span>
+                        </label>
                         <input type="text" class="form-control" id="eligibility" name="eligibility"
                             value="{{ job.eligibility if job else '' }}"
-                            placeholder="e.g., 2-5 years experience, B.Tech">
+                            placeholder="e.g., 2-5 years experience, B.Tech" required>
+                        <div class="invalid-feedback"></div>
                     </div>
                 </div>
 
                 <div class="form-group-row">
                     <div class="form-group">
-                        <label for="application_deadline" class="form-label">Application Deadline</label>
+                        <label for="application_deadline" class="form-label">
+                            Application Deadline
+                            <span class="required-mark">*</span>
+                        </label>
                         <input type="date" class="form-control" id="application_deadline" name="application_deadline"
-                            value="{% if job and job.application_deadline %}{{ job.application_deadline.strftime('%Y-%m-%d') }}{% endif %}">
+                            value="{% if job and job.application_deadline %}{{ job.application_deadline.strftime('%Y-%m-%d') }}{% endif %}" required>
                         <div class="invalid-feedback"></div>
-                        <small class="form-text">Leave blank if no deadline</small>
+                        <small class="form-text">Select a date today or in the future</small>
                     </div>
                 </div>
             </div>
@@ -163,17 +182,23 @@
 
                 <div class="form-group-row">
                     <div class="form-group">
-                        <label for="company_website" class="form-label">Company Website URL</label>
+                        <label for="company_website" class="form-label">
+                            Company Website URL
+                            <span class="required-mark">*</span>
+                        </label>
                         <input type="text" class="form-control" id="company_website" name="company_website"
-                            value="{{ job.company_website | default('', true) }}" placeholder="https://company.com">
+                            value="{{ job.company_website | default('', true) }}" placeholder="https://company.com" required>
                         <div class="invalid-feedback"></div>
-                        <small class="form-text">Company website URL (optional)</small>
+                        <small class="form-text">Company website URL</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="contact_email" class="form-label">Email of Company</label>
+                        <label for="contact_email" class="form-label">
+                            Company Email
+                            <span class="required-mark">*</span>
+                        </label>
                         <input type="text" class="form-control" id="contact_email" name="contact_email"
-                            value="{{ job.contact_email | default('', true) }}" placeholder="hr@company.com">
+                            value="{{ job.contact_email | default('', true) }}" placeholder="hr@company.com" required>
                         <div class="invalid-feedback"></div>
                         <small class="form-text">Email for inquiries</small>
                     </div>
@@ -181,17 +206,23 @@
 
                 <div class="form-group-row">
                     <div class="form-group">
-                        <label for="contact_phone" class="form-label">Contact Phone</label>
+                        <label for="contact_phone" class="form-label">
+                            Contact Phone
+                            <span class="required-mark">*</span>
+                        </label>
                         <input type="tel" class="form-control" id="contact_phone" name="contact_phone"
-                            value="{{ job.contact_phone | default('', true) }}" placeholder="+1 (555) 123-4567">
+                            value="{{ job.contact_phone | default('', true) }}" placeholder="+1 (555) 123-4567" required>
                         <div class="invalid-feedback"></div>
-                        <small class="form-text">Phone number for inquiries (optional)</small>
+                        <small class="form-text">Phone number for inquiries</small>
                     </div>
 
                     <div class="form-group">
-                        <label for="apply_link" class="form-label">Job Apply Link</label>
+                        <label for="apply_link" class="form-label">
+                            Job Apply Link
+                            <span class="required-mark">*</span>
+                        </label>
                         <input type="text" class="form-control" id="apply_link" name="apply_link"
-                            value="{{ job.apply_link if job else '' }}" placeholder="https://company.com/apply">
+                            value="{{ job.apply_link if job else '' }}" placeholder="https://company.com/apply" required>
                         <div class="invalid-feedback"></div>
                         <small class="form-text">Direct link for applicants</small>
                     </div>
@@ -199,11 +230,14 @@
 
                 <div class="form-group-row full">
                     <div class="form-group">
-                        <label for="company_linkedin_url" class="form-label">Company LinkedIn URL</label>
+                        <label for="company_linkedin_url" class="form-label">
+                            Company LinkedIn URL
+                            <span class="required-mark">*</span>
+                        </label>
                         <input type="text" class="form-control" id="company_linkedin_url" name="company_linkedin_url"
-                            value="{{ job.company_linkedin_url | default('', true) }}" placeholder="https://www.linkedin.com/company/">
+                            value="{{ job.company_linkedin_url | default('', true) }}" placeholder="https://www.linkedin.com/company/" required>
                         <div class="invalid-feedback"></div>
-                        <small class="form-text">LinkedIn profile or company page (optional)</small>
+                        <small class="form-text">LinkedIn profile or company page</small>
                     </div>
                 </div>
             </div>

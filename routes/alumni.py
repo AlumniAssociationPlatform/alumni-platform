@@ -150,8 +150,18 @@ def create_job():
             company = request.form.get("company", "").strip()
             description = request.form.get("description", "").strip()
             job_type = request.form.get("job_type", "").strip()
+            location = request.form.get("location", "").strip()
+            salary_range = request.form.get("salary_range", "").strip()
+            eligibility = request.form.get("eligibility", "").strip()
+            department = request.form.get("department", "").strip()
+            contact_email = request.form.get("contact_email", "").strip()
+            contact_phone = request.form.get("contact_phone", "").strip()
+            apply_link = request.form.get("apply_link", "").strip()
+            company_website = request.form.get("company_website", "").strip()
+            company_linkedin_url = request.form.get("company_linkedin_url", "").strip()
             
-            if not all([title, company, description, job_type]):
+            if not all([title, company, description, job_type, location, salary_range, eligibility, 
+                       department, contact_email, contact_phone, apply_link, company_website, company_linkedin_url]):
                 error_msg = "Please fill in all required fields."
                 if request.headers.get('Accept') == 'application/json':
                     return jsonify({"success": False, "message": error_msg}), 400
@@ -165,18 +175,7 @@ def create_job():
                 flash(error_msg, "error")
                 return redirect(url_for("alumni.create_job"))
             
-            # Parse optional fields
-            location = request.form.get("location", "").strip() or None
-            salary_range = request.form.get("salary_range", "").strip() or None
-            eligibility = request.form.get("eligibility", "").strip() or None
-            department = request.form.get("department", "").strip() or None
-            contact_email = request.form.get("contact_email", "").strip() or None
-            contact_phone = request.form.get("contact_phone", "").strip() or None
-            apply_link = request.form.get("apply_link", "").strip() or None
-            company_website = request.form.get("company_website", "").strip() or None
-            company_linkedin_url = request.form.get("company_linkedin_url", "").strip() or None
-            
-            # Handle optional job poster image upload
+            # Parse optional fields (only job_poster is optional)
             job_poster = None
             if 'job_poster' in request.files:
                 file = request.files['job_poster']
@@ -314,17 +313,18 @@ def edit_job(job_id):
             company = request.form.get("company", "").strip()
             description = request.form.get("description", "").strip()
             job_type = request.form.get("job_type", "").strip()
-            location = request.form.get("location", "").strip() or None
-            salary_range = request.form.get("salary_range", "").strip() or None
-            eligibility = request.form.get("eligibility", "").strip() or None
-            department = request.form.get("department", "").strip() or None
-            contact_email = request.form.get("contact_email", "").strip() or None
-            contact_phone = request.form.get("contact_phone", "").strip() or None
-            apply_link = request.form.get("apply_link", "").strip() or None
-            company_website = request.form.get("company_website", "").strip() or None
-            company_linkedin_url = request.form.get("company_linkedin_url", "").strip() or None
+            location = request.form.get("location", "").strip()
+            salary_range = request.form.get("salary_range", "").strip()
+            eligibility = request.form.get("eligibility", "").strip()
+            department = request.form.get("department", "").strip()
+            contact_email = request.form.get("contact_email", "").strip()
+            contact_phone = request.form.get("contact_phone", "").strip()
+            apply_link = request.form.get("apply_link", "").strip()
+            company_website = request.form.get("company_website", "").strip()
+            company_linkedin_url = request.form.get("company_linkedin_url", "").strip()
             
-            if not all([title, company, description, job_type]):
+            if not all([title, company, description, job_type, location, salary_range, eligibility, 
+                       department, contact_email, contact_phone, apply_link, company_website, company_linkedin_url]):
                 error_msg = "Please fill in all required fields."
                 if request.headers.get('Accept') == 'application/json':
                     return jsonify({"success": False, "message": error_msg}), 400
