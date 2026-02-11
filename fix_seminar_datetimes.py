@@ -8,6 +8,7 @@ Usage:
 
 import sys
 import pytz
+from datetime import datetime
 from app import app, db
 from models.seminar import Seminar
 
@@ -27,11 +28,22 @@ def fix_seminar_datetimes():
         
         for seminar in seminars:
             # Check if the date is naive (no timezone info)
-            if seminar.date and seminar.date.tzinfo is None:
-                # Convert naive datetime to UTC timezone-aware datetime
-                seminar.date = pytz.UTC.localize(seminar.date)
-                fixed_count += 1
-                print(f"Fixed seminar '{seminar.title}' (ID: {seminar.id}) - Date: {seminar.date}")
+            # Only check tzinfo if it's a datetime object, not a date object
+            if seminar.date and isinstance(seminar.date, datetime):
+                if seminar.date.tzinfo is None:
+                    # Convert naive datetime to UTC timezone-aware datetime
+                    seminar.date = pytz.UTC.localize(seminar.date)
+                    fixed_count += 1
+                    print(f"Fixed seminar '{seminar.title}' (ID: {seminar.id}) - Date: {seminar.date}")
+            elif seminar.date and not isinstance(seminar.date, datetime):
+                # For date objects, convert to datetime at midnight UTC
+                try:
+                    seminar.date = datetime.combine(seminar.date, datetime.min.time())
+                    seminar.date = pytz.UTC.localize(seminar.date)
+                    fixed_count += 1
+                    print(f"Fixed seminar '{seminar.title}' (ID: {seminar.id}) - Date: {seminar.date}")
+                except Exception as e:
+                    print(f"Error fixing seminar '{seminar.title}' (ID: {seminar.id}): {e}")
         
         # Commit changes if any were made
         if fixed_count > 0:

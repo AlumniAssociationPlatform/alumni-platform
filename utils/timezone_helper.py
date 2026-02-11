@@ -46,6 +46,10 @@ def convert_utc_to_local(utc_datetime):
     if utc_datetime is None:
         return None
     
+    # Convert date objects to datetime at midnight UTC
+    if isinstance(utc_datetime, date) and not isinstance(utc_datetime, datetime):
+        utc_datetime = datetime.combine(utc_datetime, time.min)
+    
     # If the datetime is naive (no timezone info), assume it's UTC
     if utc_datetime.tzinfo is None:
         utc_datetime = pytz.UTC.localize(utc_datetime)
@@ -72,6 +76,10 @@ def convert_local_to_utc(local_datetime):
     """
     if local_datetime is None:
         return None
+    
+    # Convert date objects to datetime at midnight UTC
+    if isinstance(local_datetime, date) and not isinstance(local_datetime, datetime):
+        local_datetime = datetime.combine(local_datetime, time.min)
     
     local_tz = get_local_timezone()
     
