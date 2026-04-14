@@ -4,10 +4,10 @@ from datetime import timezone
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "alumni-portal-secret-key")
 
-    DB_USER = os.getenv("MYSQLUSER", "root")
-    DB_PASSWORD = os.getenv("MYSQLPASSWORD", "12345")
-    DB_HOST = os.getenv("MYSQLHOST", "localhost")
-    DB_NAME = os.getenv("MYSQLDATABASE", "alumni_portal_db")
+    DB_USER = os.getenv("MYSQLUSER")
+    DB_PASSWORD = os.getenv("MYSQLPASSWORD")
+    DB_HOST = os.getenv("MYSQLHOST")
+    DB_NAME = os.getenv("MYSQLDATABASE")
     DB_PORT = os.getenv("MYSQLPORT", 3306)
 
     SQLALCHEMY_DATABASE_URI = (
